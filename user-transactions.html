@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - Nexus Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="user-styles.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Nexus Bank</span>
+            </a>
+            <button class="close-sidebar" id="close-sidebar"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="user-dashboard.html"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a href="user-profile.html"><i class="fa-solid fa-user"></i> My Profile</a></li>
+            <li><a href="user-accounts.html"><i class="fa-solid fa-wallet"></i> My Accounts</a></li>
+            <li><a href="user-deposit.html"><i class="fa-solid fa-money-bill-transfer"></i> Deposit / Withdraw</a></li>
+            <li><a href="user-transfer.html"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fund Transfer</a></li>
+            <li><a href="user-transactions.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
+            <li><a href="user-dashboard.html"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>
+            <li><a href="user-loan.html"><i class="fa-solid fa-hand-holding-dollar"></i> Loan Services</a></li>
+        </ul>
+        <a href="index.html" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+    </nav>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" placeholder="Search transactions...">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="icon-action" id="dark-mode-toggle" title="Toggle Dark Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button class="icon-action" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-dropdown">
+                    <img src="https://i.pravatar.cc/150?img=12" alt="User Profile" class="user-avatar">
+                    <div class="user-info-top">
+                        <h4>Mirza Mamun</h4>
+                        <p>Standard Account</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content" style="display: block;">
+            
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 style="color: var(--text-main);">Transaction History</h1>
+                    <p style="color: var(--text-muted);">View and download your full transaction statements.</p>
+                </div>
+                <button class="btn-secondary" style="color: var(--accent); border-color: var(--accent);">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF Statement
+                </button>
+            </div>
+
+            <!-- Filters Area -->
+            <div class="section-panel" style="margin-bottom: 24px; padding: 16px 24px;">
+                <form style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="form-group" style="margin-bottom: 0; min-width: 150px;">
+                        <label>From Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0; min-width: 150px;">
+                        <label>To Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                        <label>Transaction Type</label>
+                        <select class="form-control">
+                            <option value="">All Types</option>
+                            <option value="deposit">Deposit</option>
+                            <option value="withdraw">Withdraw</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-accent" style="width: auto; padding: 12px 20px;">
+                        <i class="fa-solid fa-filter"></i> Apply Filter
+                    </button>
+                </form>
+            </div>
+
+            <!-- Full Transaction Table -->
+            <div class="section-panel">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Account</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>08-06-2026</td>
+                            <td><span class="badge success">Deposit</span></td>
+                            <td>ACC-10492</td>
+                            <td class="amount credit">+ $5,000.00</td>
+                            <td><span class="badge success">Success</span></td>
+                        </tr>
+                        <tr>
+                            <td>07-06-2026</td>
+                            <td><span class="badge pending">Transfer Out</span></td>
+                            <td>ACC-10492</td>
+                            <td class="amount debit">- $2,000.00</td>
+                            <td><span class="badge success">Success</span></td>
+                        </tr>
+                        <tr>
+                            <td>05-06-2026</td>
+                            <td><span class="badge" style="background-color: var(--danger-light); color: var(--danger);">Withdrawal</span></td>
+                            <td>ACC-10492</td>
+                            <td class="amount debit">- $500.00</td>
+                            <td><span class="badge success">Success</span></td>
+                        </tr>
+                        <tr>
+                            <td>01-06-2026</td>
+                            <td><span class="badge success">Salary</span></td>
+                            <td>ACC-10492</td>
+                            <td class="amount credit">+ $8,200.00</td>
+                            <td><span class="badge success">Success</span></td>
+                        </tr>
+                        <tr>
+                            <td>28-05-2026</td>
+                            <td><span class="badge pending">Transfer In</span></td>
+                            <td>ACC-10493</td>
+                            <td class="amount credit">+ $1,250.00</td>
+                            <td><span class="badge success">Success</span></td>
+                        </tr>
+                        <tr>
+                            <td>25-05-2026</td>
+                            <td><span class="badge info">Fee</span></td>
+                            <td>ACC-10492</td>
+                            <td class="amount debit">- $15.00</td>
+                            <td><span class="badge success">Success</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="user-script.js"></script>
+</body>
+</html>
