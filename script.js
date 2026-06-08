@@ -55,3 +55,43 @@ window.addEventListener('click', (e) => {
         e.target.classList.remove('active');
     }
 });
+
+// Counter Animation for Landing Page
+document.addEventListener('DOMContentLoaded', () => {
+    const counters = document.querySelectorAll('.stat-number');
+    const speed = 200; // The lower the slower
+
+    const animateCounters = () => {
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText.replace(/,/g, '');
+
+                const inc = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc).toLocaleString();
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target.toLocaleString() + (target === 850 ? 'M' : target === 3200 || target === 50000 || target === 120000 ? '+' : '');
+                }
+            };
+            updateCount();
+        });
+    };
+
+    // Intersection Observer to trigger animation on scroll
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounters();
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+        observer.observe(statsSection);
+    }
+});
