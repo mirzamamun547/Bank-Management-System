@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Nexus Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="user-styles.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Nexus Bank</span>
+            </a>
+            <button class="close-sidebar" id="close-sidebar"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="/user-dashboard" class="active"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a href="/user-profile"><i class="fa-solid fa-user"></i> My Profile</a></li>
+            <li><a href="/user-accounts"><i class="fa-solid fa-wallet"></i> My Accounts</a></li>
+            <li><a href="/user-deposit"><i class="fa-solid fa-money-bill-transfer"></i> Deposit / Withdraw</a></li>
+            <li><a href="/user-transfer"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fund Transfer</a></li>
+            <li><a href="/user-transactions"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
+            <li><a href="/user-dashboard"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>
+            <li><a href="/user-loan"><i class="fa-solid fa-hand-holding-dollar"></i> Loan Services</a></li>
+        </ul>
+        <a href="/" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+    </nav>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" placeholder="Search transactions, accounts...">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="icon-action" id="dark-mode-toggle" title="Toggle Dark Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button class="icon-action" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-dropdown">
+                    <img src="https://i.pravatar.cc/150?img=12" alt="User Profile" class="user-avatar">
+                    <div class="user-info-top">
+                        <h4>Mirza Mamun</h4>
+                        <p>Standard Account</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content">
+            <!-- Left Column -->
+            <div class="left-col">
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-icon icon-blue"><i class="fa-solid fa-wallet"></i></div>
+                        <p class="card-title">Total Balance</p>
+                        <h2 class="card-value">$24,500.00</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon icon-green"><i class="fa-solid fa-building-columns"></i></div>
+                        <p class="card-title">Account Number</p>
+                        <h2 class="card-value" style="font-size: 1.25rem;">ACC-10492</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon icon-purple"><i class="fa-solid fa-piggy-bank"></i></div>
+                        <p class="card-title">Account Type</p>
+                        <h2 class="card-value" style="font-size: 1.25rem;">Savings</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon icon-orange"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <p class="card-title">Last Transaction</p>
+                        <h2 class="card-value" style="font-size: 1.25rem;">08 June 2026</h2>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-section">
+                    <h2>Quick Actions</h2>
+                    <div class="quick-actions">
+                        <a href="/user-deposit" class="action-btn">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>Deposit Money</span>
+                        </a>
+                        <a href="/user-deposit" class="action-btn">
+                            <i class="fa-solid fa-minus-circle"></i>
+                            <span>Withdraw Money</span>
+                        </a>
+                        <a href="/user-transfer" class="action-btn">
+                            <i class="fa-solid fa-exchange-alt"></i>
+                            <span>Transfer Funds</span>
+                        </a>
+                        <a href="/user-transactions" class="action-btn">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            <span>View Statement</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Balance Analytics -->
+                <div class="section-panel">
+                    <div class="panel-header">
+                        <h3>Balance Analytics</h3>
+                        <a href="#" class="view-all"><i class="fa-solid fa-download"></i> Download PDF</a>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Transaction History -->
+                <div class="section-panel">
+                    <div class="panel-header">
+                        <h3>Recent Transactions</h3>
+                        <a href="#" class="view-all">View All <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>08-06-2026</td>
+                                <td><span class="badge success">Deposit</span></td>
+                                <td class="amount credit">+ $5,000.00</td>
+                                <td><span class="badge success">Success</span></td>
+                            </tr>
+                            <tr>
+                                <td>07-06-2026</td>
+                                <td><span class="badge pending">Transfer</span></td>
+                                <td class="amount debit">- $2,000.00</td>
+                                <td><span class="badge success">Success</span></td>
+                            </tr>
+                            <tr>
+                                <td>05-06-2026</td>
+                                <td><span class="badge pending">Withdrawal</span></td>
+                                <td class="amount debit">- $500.00</td>
+                                <td><span class="badge success">Success</span></td>
+                            </tr>
+                            <tr>
+                                <td>01-06-2026</td>
+                                <td><span class="badge success">Salary</span></td>
+                                <td class="amount credit">+ $8,200.00</td>
+                                <td><span class="badge success">Success</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Loan Section -->
+                <div class="loan-info">
+                    <div class="loan-details">
+                        <h4>Personal Loan <span class="badge pending">Active</span></h4>
+                        <p>Remaining Amount: <strong>$12,500.00</strong></p>
+                        <p>Next Payment: 15 June 2026 ($450.00)</p>
+                    </div>
+                    <button class="btn-primary">Apply Loan / Pay</button>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-col">
+                <!-- Profile Box -->
+                <div class="section-panel profile-box">
+                    <img src="https://i.pravatar.cc/150?img=12" alt="Mirza Mamun" class="user-avatar">
+                    <h3>Mirza Mamun <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 1rem;" title="KYC Verified"></i></h3>
+                    <p>mirza.mamun@example.com</p>
+                    
+                    <div class="status-badges">
+                        <span class="status-badge"><i class="fa-solid fa-shield-halved"></i> Active</span>
+                        <span class="status-badge"><i class="fa-solid fa-lock"></i> 2FA Enabled</span>
+                    </div>
+
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <span>Phone</span>
+                            <span>+880 1711-223344</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Joined</span>
+                            <span>Oct 2023</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Panel -->
+                <div class="section-panel">
+                    <div class="panel-header">
+                        <h3>Notifications</h3>
+                        <a href="#" class="view-all">Mark read</a>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item success">
+                            <div class="notif-icon success"><i class="fa-solid fa-arrow-down"></i></div>
+                            <div class="notif-content">
+                                <p><strong>$5,000 deposited</strong> successfully to your savings account.</p>
+                                <span class="notif-time">2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="notification-item warning">
+                            <div class="notif-icon warning"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                            <div class="notif-content">
+                                <p><strong>Fund transferred</strong> to Account Ending in 4512.</p>
+                                <span class="notif-time">Yesterday</span>
+                            </div>
+                        </div>
+                        <div class="notification-item info">
+                            <div class="notif-icon info"><i class="fa-solid fa-calendar-day"></i></div>
+                            <div class="notif-content">
+                                <p><strong>Loan installment</strong> due in 3 days. Please maintain sufficient balance.</p>
+                                <span class="notif-time">3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="user-script.js"></script>
+</body>
+</html>

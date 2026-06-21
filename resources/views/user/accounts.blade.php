@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Accounts - Nexus Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="user-styles.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Nexus Bank</span>
+            </a>
+            <button class="close-sidebar" id="close-sidebar"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="/user-dashboard"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a href="/user-profile"><i class="fa-solid fa-user"></i> My Profile</a></li>
+            <li><a href="/user-accounts" class="active"><i class="fa-solid fa-wallet"></i> My Accounts</a></li>
+            <li><a href="/user-deposit"><i class="fa-solid fa-money-bill-transfer"></i> Deposit / Withdraw</a></li>
+            <li><a href="/user-transfer"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fund Transfer</a></li>
+            <li><a href="/user-transactions"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
+            <li><a href="/user-dashboard"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>
+            <li><a href="/user-loan"><i class="fa-solid fa-hand-holding-dollar"></i> Loan Services</a></li>
+        </ul>
+        <a href="/" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+    </nav>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" placeholder="Search accounts...">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="icon-action" id="dark-mode-toggle" title="Toggle Dark Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button class="icon-action" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-dropdown">
+                    <img src="https://i.pravatar.cc/150?img=12" alt="User Profile" class="user-avatar">
+                    <div class="user-info-top">
+                        <h4>Mirza Mamun</h4>
+                        <p>Standard Account</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content" style="display: block;">
+            
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 style="color: var(--text-main);">My Accounts</h1>
+                    <p style="color: var(--text-muted);">Manage your active accounts and open new ones.</p>
+                </div>
+                <button class="btn-accent" style="width: auto;" onclick="alert('Open Account Modal feature coming soon')">
+                    <i class="fa-solid fa-plus"></i> Create Account
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div style="margin-bottom: 24px; display: flex; gap: 16px; align-items: center;">
+                <label style="font-weight: 500; color: var(--text-main);"><i class="fa-solid fa-filter"></i> Filter By:</label>
+                <select class="form-control" style="width: 200px;">
+                    <option>All Accounts</option>
+                    <option>Savings Account</option>
+                    <option>Current Account</option>
+                    <option>Fixed Deposit</option>
+                </select>
+            </div>
+
+            <!-- Account Cards Grid -->
+            <div class="summary-cards" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                
+                <div class="card" style="position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background-color: var(--primary);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div class="card-icon icon-blue" style="margin-bottom: 0;"><i class="fa-solid fa-piggy-bank"></i></div>
+                        <span class="badge success">Active</span>
+                    </div>
+                    <p class="card-title">Savings Account</p>
+                    <h2 class="card-value" style="font-size: 1.5rem; margin-bottom: 4px;">ACC-10492</h2>
+                    <h2 class="card-value" style="color: var(--primary);">$24,500.00</h2>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-code-branch"></i> Central Branch</span>
+                        <a href="/user-transactions" style="color: var(--accent); text-decoration: none; font-weight: 600;">View History</a>
+                    </div>
+                </div>
+
+                <div class="card" style="position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background-color: var(--accent);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div class="card-icon" style="background-color: var(--primary-light); color: var(--accent); margin-bottom: 0;"><i class="fa-solid fa-wallet"></i></div>
+                        <span class="badge success">Active</span>
+                    </div>
+                    <p class="card-title">Current Account</p>
+                    <h2 class="card-value" style="font-size: 1.5rem; margin-bottom: 4px;">ACC-10493</h2>
+                    <h2 class="card-value" style="color: var(--accent);">$5,200.00</h2>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-code-branch"></i> Central Branch</span>
+                        <a href="/user-transactions" style="color: var(--accent); text-decoration: none; font-weight: 600;">View History</a>
+                    </div>
+                </div>
+
+                <div class="card" style="position: relative; overflow: hidden; opacity: 0.8;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background-color: var(--danger);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div class="card-icon" style="background-color: var(--danger-light); color: var(--danger); margin-bottom: 0;"><i class="fa-solid fa-lock"></i></div>
+                        <span class="badge" style="background-color: var(--danger-light); color: var(--danger);">Blocked</span>
+                    </div>
+                    <p class="card-title">Fixed Deposit</p>
+                    <h2 class="card-value" style="font-size: 1.5rem; margin-bottom: 4px;">FD-99214</h2>
+                    <h2 class="card-value" style="color: var(--text-muted);">$10,000.00</h2>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-code-branch"></i> North Branch</span>
+                        <span>Maturity: 2028</span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="user-script.js"></script>
+</body>
+</html>
