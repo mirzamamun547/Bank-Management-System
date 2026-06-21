@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Bank - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0A2E5C;
+            --secondary: #1E90FF;
+            --accent: #28a745;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg: #f0f4f8;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .logo i {
+            font-size: 2.2rem;
+            color: var(--secondary);
+        }
+
+        .logo-text {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .logo-text .blue { color: var(--primary); }
+        .logo-text .dark { color: var(--text-dark); }
+
+        .role-label {
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 12px auto 28px;
+            width: fit-content;
+        }
+
+        .role-label.employee { background: #e8f0fe; color: var(--primary); }
+        .role-label.customer { background: #e6faf0; color: #059669; }
+
+        .center { text-align: center; }
+
+        .form-group { margin-bottom: 18px; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .input-box {
+            position: relative;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-box input:focus {
+            border-color: var(--secondary);
+        }
+
+        .input-box input::placeholder { color: #a0aec0; }
+
+        .input-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            font-size: 0.85rem;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .options a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .login-btn:hover { opacity: 0.9; }
+        .login-btn.employee { background: var(--primary); }
+        .login-btn.customer { background: #059669; }
+
+        .switch {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .switch a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .back a {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        .back a:hover { color: var(--secondary); }
+        .back a:hover { color: var(--secondary); }
+
+        .error-message {
+            background: #fcebeb;
+            color: #ea5455;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo"><i class="fa-solid fa-building-columns"></i></div>
+        <div class="logo-text"><span class="blue">Nexus</span><span class="dark">Bank</span></div>
+        <div class="center">
+            <div class="role-label" id="roleLabel">Employee Login</div>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label id="idLabel">Employee ID or Email</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="loginId" placeholder="Enter your ID or email" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    <button type="button" class="toggle-pw" id="togglePw"><i class="fa-solid fa-eye"></i></button>
+                </div>
+            </div>
+
+            <div class="options">
+                <label><input type="checkbox"> Remember me</label>
+                <a href="#">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="login-btn" id="submitBtn">Sign In</button>
+        </form>
+
+        <div class="switch" id="switchRole"></div>
+        <div class="back"><a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Home</a></div>
+    </div>
+
+    <script>
+        // Seed default accounts in localStorage if not already present
+        function seedDatabase() {
+            // Seed default Employee
+            if (!localStorage.getItem('nexus_employees')) {
+                const defaultEmployees = [
+                    { username: 'emp001', email: 'emp001@nexus.com', password: 'password123', fullName: 'John Doe (Employee)' }
+                ];
+                localStorage.setItem('nexus_employees', JSON.stringify(defaultEmployees));
+            }
+
+            // Seed default Customer
+            if (!localStorage.getItem('nexus_customers')) {
+                const defaultCustomers = [
+                    {
+                        customerId: 'CUST-100000',
+                        firstName: 'Jane',
+                        lastName: 'Smith',
+                        fullName: 'Jane Smith (Customer)',
+                        email: 'jane.smith@gmail.com',
+                        phone: '555-0199',
+                        address: '123 Bank St, New York',
+                        dob: '1990-05-15',
+                        nid: 'NID-9988776655',
+                        password: 'password123',
+                        status: 'ACTIVE',
+                        createdDate: '2026-06-20'
+                    }
+                ];
+                localStorage.setItem('nexus_customers', JSON.stringify(defaultCustomers));
+                localStorage.setItem('nexus_last_cust_id', '100000');
+            }
+        }
+
+        seedDatabase();
+
+        const role = new URLSearchParams(window.location.search).get('role') || 'employee';
+        const isEmp = role === 'employee';
+
+        document.getElementById('roleLabel').textContent = isEmp ? 'Employee Login' : 'Customer Login';
+        document.getElementById('roleLabel').classList.add(isEmp ? 'employee' : 'customer');
+        document.getElementById('idLabel').textContent = isEmp ? 'Employee ID or Email' : 'Customer ID or Email';
+        document.getElementById('loginId').placeholder = isEmp ? 'Enter your employee ID' : 'CUST-XXXXXX or email';
+        document.getElementById('submitBtn').classList.add(isEmp ? 'employee' : 'customer');
+        
+        document.getElementById('switchRole').innerHTML = isEmp
+            ? 'Are you a customer? <a href="login.html?role=customer">Login here</a>'
+            : 'Are you an employee? <a href="login.html?role=employee">Login here</a><br><div style="margin-top: 10px;">Don\'t have an account? <a href="signup.html">Sign up here</a></div>';
+        
+        document.title = 'Nexus Bank - ' + (isEmp ? 'Employee Login' : 'Customer Login');
+
+        // Password toggle
+        document.getElementById('togglePw').addEventListener('click', () => {
+            const pw = document.getElementById('loginPassword');
+            pw.type = pw.type === 'password' ? 'text' : 'password';
+            document.getElementById('togglePw').querySelector('i').classList.toggle('fa-eye');
+            document.getElementById('togglePw').querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Submit and verification against localStorage
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const loginId = document.getElementById('loginId').value.trim().toLowerCase();
+            const loginPw = document.getElementById('loginPassword').value;
+            const errBox = document.getElementById('errorMessage');
+            const errTxt = document.getElementById('errorText');
+
+            errBox.style.display = 'none';
+
+            if (isEmp) {
+                const employees = JSON.parse(localStorage.getItem('nexus_employees') || '[]');
+                const employee = employees.find(emp => 
+                    (emp.username.toLowerCase() === loginId || emp.email.toLowerCase() === loginId) && 
+                    emp.password === loginPw
+                );
+
+                if (employee) {
+                    sessionStorage.setItem('nexus_currentUser', JSON.stringify({
+                        id: employee.username,
+                        fullName: employee.fullName,
+                        email: employee.email,
+                        role: 'EMPLOYEE'
+                    }));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errTxt.textContent = "Invalid Employee ID/Email or password.";
+                    errBox.style.display = 'flex';
+                }
+            } else {
+                const customers = JSON.parse(localStorage.getItem('nexus_customers') || '[]');
+                const customer = customers.find(cust => 
+                    (cust.customerId.toLowerCase() === loginId || cust.email.toLowerCase() === loginId) && 
+                    cust.password === loginPw
+                );
+
+                if (customer) {
+                    if (customer.status !== 'ACTIVE') {
+                        errTxt.textContent = "Your account is not active. Please contact customer support.";
+                        errBox.style.display = 'flex';
+                        return;
+                    }
+                    sessionStorage.setItem('nexus_currentUser', JSON.stringify({
+                        id: customer.customerId,
+                        fullName: customer.fullName,
+                        firstName: customer.firstName,
+                        lastName: customer.lastName,
+                        email: customer.email,
+                        phone: customer.phone,
+                        address: customer.address,
+                        dob: customer.dob,
+                        nid: customer.nid,
+                        role: 'CUSTOMER'
+                    }));
+                    window.location.href = 'user-dashboard.html';
+                } else {
+                    errTxt.textContent = "Invalid Customer ID/Email or password.";
+                    errBox.style.display = 'flex';
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

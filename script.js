@@ -95,3 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(statsSection);
     }
 });
+
+// Login Dropdown Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const loginDropdown = document.getElementById('loginDropdown');
+    const loginToggleBtn = document.getElementById('loginToggleBtn');
+
+    if (loginToggleBtn && loginDropdown) {
+        loginToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            loginDropdown.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!loginDropdown.contains(e.target)) {
+                loginDropdown.classList.remove('active');
+            }
+        });
+
+        // Close dropdown on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                loginDropdown.classList.remove('active');
+            }
+        });
+    }
+});

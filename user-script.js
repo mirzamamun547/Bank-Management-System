@@ -1,4 +1,71 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Load dynamic user data from sessionStorage
+    const currentUser = JSON.parse(sessionStorage.getItem('nexus_currentUser'));
+    if (currentUser) {
+        // Update topbar name
+        const topbarName = document.querySelector('.user-info-top h4');
+        if (topbarName) topbarName.textContent = currentUser.fullName;
+
+        // Update profile box details
+        const profileBox = document.querySelector('.profile-box');
+        if (profileBox) {
+            const h3 = profileBox.querySelector('h3');
+            if (h3) {
+                h3.innerHTML = currentUser.fullName + ' <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 1.1rem;" title="KYC Verified"></i>';
+            }
+            const p = profileBox.querySelector('p');
+            if (p) p.textContent = currentUser.email;
+
+            // Details inside list
+            const detailItems = profileBox.querySelectorAll('.detail-item');
+            detailItems.forEach(item => {
+                const label = item.querySelector('span:first-child');
+                const val = item.querySelector('span:last-child');
+                if (label && val) {
+                    const txt = label.textContent.trim().toLowerCase();
+                    if (txt === 'phone') {
+                        val.textContent = currentUser.phone || '+1 (555) 000-0000';
+                    } else if (txt === 'joined') {
+                        val.textContent = currentUser.createdDate || 'Oct 2023';
+                    } else if (txt === 'address') {
+                        val.innerHTML = (currentUser.address || 'Address').replace(/\n/g, '<br>');
+                    }
+                }
+            });
+        }
+
+        // Update edit profile inputs if we are on edit profile page
+        const formGroups = document.querySelectorAll('.form-group');
+        formGroups.forEach(group => {
+            const label = group.querySelector('label');
+            const input = group.querySelector('input, textarea');
+            if (label && input) {
+                const txt = label.textContent.trim().toLowerCase();
+                if (txt === 'full name') {
+                    input.value = currentUser.fullName;
+                } else if (txt === 'phone number') {
+                    input.value = currentUser.phone || '';
+                } else if (txt === 'email address') {
+                    input.value = currentUser.email;
+                } else if (txt === 'residential address') {
+                    input.value = currentUser.address || '';
+                }
+            }
+        });
+
+        // Update Account Number card if it exists
+        const summaryCards = document.querySelectorAll('.summary-cards .card');
+        summaryCards.forEach(card => {
+            const title = card.querySelector('.card-title');
+            const value = card.querySelector('.card-value');
+            if (title && value) {
+                if (title.textContent.trim().toLowerCase() === 'account number') {
+                    value.textContent = currentUser.id;
+                }
+            }
+        });
+    }
+
     // Mobile Sidebar Toggle
     const menuToggle = document.getElementById('menu-toggle');
     const closeSidebar = document.getElementById('close-sidebar');
@@ -13,6 +80,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeSidebar && sidebar) {
         closeSidebar.addEventListener('click', () => {
             sidebar.classList.remove('active');
+        });
+    }
+
+    // Logout Click Handler
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('nexus_currentUser');
         });
     }
 
