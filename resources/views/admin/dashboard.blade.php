@@ -22,12 +22,13 @@
             <li data-target="accounts-section"><i class="fa-solid fa-wallet"></i> Accounts</li>
             <li data-target="loans-section"><i class="fa-solid fa-hand-holding-dollar"></i> Loans & Payments</li>
             <li data-target="employees-section"><i class="fa-solid fa-user-tie"></i> Employees</li>
+            <li data-target="profile-section"><i class="fa-solid fa-user"></i> My Profile</li>
         </ul>
         <div class="user-profile">
             <img src="https://i.pravatar.cc/150?img=11" alt="Admin Profile">
             <div>
-                <h4>Admin User</h4>
-                <p>Branch: Central</p>
+                <h4>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</h4>
+                <p>Role: {{ ucfirst(strtolower(auth()->user()->role ?? 'Admin')) }}</p>
             </div>
         </div>
     </nav>
@@ -295,6 +296,101 @@
                 </table>
             </div>
         </section>
+
+        <!-- My Profile Section -->
+        <section id="profile-section" class="content-section">
+            <div class="section-header">
+                <h1>My Profile</h1>
+                <p>Manage your personal details and security settings.</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- Profile Edit Form -->
+                <div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-user-pen" style="color: var(--primary); margin-right: 8px;"></i> Edit Profile Details</h3>
+                    @if(session('profile_success'))
+                        <div style="background-color: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                            {{ session('profile_success') }}
+                        </div>
+                    @endif
+                    <form method="POST" action="/user-profile/update">
+                        @csrf
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" value="{{ old('first_name', auth()->user()->first_name) }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" value="{{ old('last_name', auth()->user()->last_name) }}" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" value="{{ auth()->user()->email }}" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" name="phone" value="{{ old('phone', auth()->user()->phone) }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Residential Address</label>
+                            <textarea name="address" rows="3">{{ old('address', auth()->user()->address) }}</textarea>
+                        </div>
+                        <button type="submit" class="btn primary-btn"><i class="fa-solid fa-save" style="margin-right: 8px;"></i> Save Changes</button>
+                    </form>
+                </div>
+
+                <!-- Security Form -->
+                <div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-shield" style="color: var(--danger); margin-right: 8px;"></i> Security Settings</h3>
+                    @if(session('password_success'))
+                        <div style="background-color: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                            {{ session('password_success') }}
+                        </div>
+                    @endif
+                    @if($errors->has('password_error'))
+                        <div style="background-color: #fee2e2; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                            {{ $errors->first('password_error') }}
+                        </div>
+                    @endif
+                    <form method="POST" action="/user-profile/password">
+                        @csrf
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="current_password" placeholder="Enter current password" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" name="new_password" placeholder="Enter new password" required>
+                                @error('new_password')
+                                    <small style="color: #dc2626; margin-top: 4px; display: block;">{{ $message }}</small>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <input type="password" name="new_password_confirmation" placeholder="Confirm new password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn outline"><i class="fa-solid fa-key" style="margin-right: 8px;"></i> Update Password</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        @if(session('profile_success') || session('password_success') || $errors->has('password_error') || $errors->has('new_password'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                
+                document.querySelector('[data-target="profile-section"]').classList.add('active');
+                document.getElementById('profile-section').classList.add('active');
+            });
+        </script>
+        @endif
 
     </main>
 
