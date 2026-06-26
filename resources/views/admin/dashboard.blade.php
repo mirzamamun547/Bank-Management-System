@@ -147,26 +147,56 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>C-1001</td>
-                            <td>Sarah Jenkins</td>
-                            <td>(555) 123-4567</td>
-                            <td>123 Main St, Springfield</td>
-                            <td>
-                                <button class="action-btn edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>C-1002</td>
-                            <td>Michael Chen</td>
-                            <td>(555) 987-6543</td>
-                            <td>456 Oak Ave, Metropolis</td>
-                            <td>
-                                <button class="action-btn edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
+
+@forelse($customers as $customer)
+
+<tr>
+    <td>{{ $customer->customer_id }}</td>
+
+    <td>
+        {{ $customer->first_name }}
+        {{ $customer->last_name }}
+    </td>
+
+    <td>{{ $customer->phone }}</td>
+
+    <td>{{ $customer->address }}</td>
+
+    <td>
+
+        <a href="{{ route('customer.edit', $customer->id) }}"
+           class="action-btn edit">
+            <i class="fa-solid fa-pen"></i>
+        </a>
+
+        <form action="{{ route('customer.delete', $customer->id) }}"
+              method="POST"
+              style="display:inline;">
+
+            @csrf
+            @method('DELETE')
+
+            <button class="action-btn delete"
+                    onclick="return confirm('Delete this customer?')">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+
+        </form>
+
+    </td>
+
+</tr>
+
+@empty
+
+<tr>
+    <td colspan="5" style="text-align:center;">
+        No customers found.
+    </td>
+</tr>
+
+@endforelse
+
                     </tbody>
                 </table>
             </div>

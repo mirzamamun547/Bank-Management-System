@@ -16,9 +16,61 @@ class AdminController extends Controller
         // Fetch active accounts for the existing accounts list
         $activeAccounts = Account::with('user')->where('status', '!=', 'Pending')->get();
 
-        return view('admin.dashboard', compact('pendingAccounts', 'activeAccounts'));
+        // Fetch all customers (needed for the Customers section of the dashboard)
+        $customers = DB::table('USERS')
+            ->select('id', 'customer_id', 'first_name', 'last_name', 'phone', 'address')
+            ->where('role', 'CUSTOMER')
+            ->orderBy('customer_id')
+            ->get();
+
+        return view('admin.dashboard', compact('pendingAccounts', 'activeAccounts', 'customers'));
     }
 
+    public function editCustomer($id)
+    {
+        $customer = DB::table('USERS')->where('id', $id)->first();
+        if (!$customer) {
+            abort(404, 'Customer not found.');
+        }
+
+        return view('admin.edit-customer', compact('customer'));
+    }
+
+    public function updateCustomer(Request $request, $id)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:50',
+            'last_name' => 'required|string|max:50',
+            'email' => 'required|email|max:100|unique:USERS,EMAIL,' . $id,
+            'phone' => 'nullable|string|max:20',
+            'nid' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:255',
+            'dob' => 'nullable|date',
+            'status' => 'required|string|in:ACTIVE,SUSPENDED',
+        ]);
+
+        DB::table('USERS')->where('id', $id)->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'full_name' => $request->first_name . ' ' . $request->last_name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'nid' => $request->nid,
+            'address' => $request->address,
+            'dob' => $request->dob ? \Carbon\Carbon::parse($request->dob) : null,
+            'status' => $request->status,
+            'updated_at' => now(),
+        ]);
+
+        return redirect('/dashboard')->with('success', 'Customer profile updated successfully.');
+    }
+
+    public function deleteCustomer($id)
+    {
+        DB::table('USERS')->where('id', $id)->delete();
+
+        return redirect()->back()->with('success', 'Customer deleted successfully.');
+    }
     public function approveAccount(Request $request, $id)
     {
         $account = Account::with('user')->findOrFail($id);

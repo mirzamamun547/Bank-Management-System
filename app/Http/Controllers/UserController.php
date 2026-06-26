@@ -88,7 +88,7 @@ class UserController extends Controller
             'mother_name' => 'nullable|string|max:100',
             'gender' => 'nullable|string|in:Male,Female,Transgender',
             'mobile' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'email' => 'nullable|email|max:255|unique:USERS,EMAIL,' . Auth::id(),
             'address' => 'nullable|string|max:255',
             'dob' => 'nullable|date',
             'profile_photo' => 'nullable|image|max:2048',

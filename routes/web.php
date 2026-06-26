@@ -37,3 +37,11 @@ Route::get('/user-notifications', [UserController::class, 'notifications'])->mid
 
 Route::get('/user-transactions', function () { return view('user.transactions'); })->middleware('auth');
 Route::get('/user-transfer', function () { return view('user.transfer'); })->middleware('auth');
+Route::get('/customer/edit/{id}', [AdminController::class, 'editCustomer'])
+    ->name('customer.edit');
+
+Route::put('/customer/update/{id}', [AdminController::class, 'updateCustomer'])
+    ->name('customer.update');
+
+Route::delete('/customer/delete/{id}', [AdminController::class, 'deleteCustomer'])
+    ->name('customer.delete');
