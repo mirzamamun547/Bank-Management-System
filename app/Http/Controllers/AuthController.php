@@ -30,10 +30,19 @@ class AuthController extends Controller
 
         \Illuminate\Support\Facades\Log::info("Login attempt: ID/Email: '{$loginId}', Password length: " . strlen($password));
 
-        // Find user by EMAIL or CUSTOMER_ID (case-insensitive search for email)
-        $user = User::whereRaw('LOWER(EMAIL) = ?', [$loginId])
-                    ->orWhereRaw('LOWER(CUSTOMER_ID) = ?', [$loginId])
-                    ->first();
+        $expectedRole = $request->input('expected_role');
+
+        if ($expectedRole === 'customer') {
+            // Find user by NID or CUSTOMER_ID for customers
+            $user = User::whereRaw('LOWER(NID) = ?', [$loginId])
+                        ->orWhereRaw('LOWER(CUSTOMER_ID) = ?', [$loginId])
+                        ->first();
+        } else {
+            // Find user by EMAIL or CUSTOMER_ID for employees
+            $user = User::whereRaw('LOWER(EMAIL) = ?', [$loginId])
+                        ->orWhereRaw('LOWER(CUSTOMER_ID) = ?', [$loginId])
+                        ->first();
+        }
 
         if ($user) {
              \Illuminate\Support\Facades\Log::info("User array keys: " . implode(', ', array_keys($user->getAttributes())));

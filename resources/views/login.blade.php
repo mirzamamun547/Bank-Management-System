@@ -258,8 +258,8 @@
 
         document.getElementById('roleLabel').textContent = isEmp ? 'Employee Login' : 'Customer Login';
         document.getElementById('roleLabel').classList.add(isEmp ? 'employee' : 'customer');
-        document.getElementById('idLabel').textContent = isEmp ? 'Employee ID or Email' : 'Customer ID or Email';
-        document.getElementById('loginId').placeholder = isEmp ? 'Enter your employee ID' : 'CUST-XXXXXX or email';
+        document.getElementById('idLabel').textContent = isEmp ? 'Employee ID or Email' : 'NID or Customer ID';
+        document.getElementById('loginId').placeholder = isEmp ? 'Enter your employee ID or email' : 'Enter your NID or Customer ID';
         document.getElementById('loginId').name = 'loginId';
         document.getElementById('loginPassword').name = 'password';
         document.getElementById('expectedRole').value = isEmp ? 'employee' : 'customer';

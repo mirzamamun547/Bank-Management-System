@@ -29,6 +29,7 @@
             <li><a href="/user-transactions"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
             <li><a href="/user-dashboard"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>
             <li><a href="/user-loan"><i class="fa-solid fa-hand-holding-dollar"></i> Loan Services</a></li>
+            <li><a href="/user-notifications"><i class="fa-solid fa-bell"></i> Notifications</a></li>
         </ul>
         <a href="/" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
     </nav>
@@ -48,15 +49,23 @@
                 <button class="icon-action" id="dark-mode-toggle" title="Toggle Dark Mode">
                     <i class="fa-solid fa-moon"></i>
                 </button>
-                <button class="icon-action" title="Notifications">
+                @php
+                    $unreadNotificationsCount = \Illuminate\Support\Facades\DB::table('notifications')
+                        ->where('user_id', auth()->id())
+                        ->where('is_read', 0)
+                        ->count();
+                @endphp
+                <button class="icon-action" title="Notifications" onclick="window.location.href='/user-notifications'">
                     <i class="fa-regular fa-bell"></i>
-                    <span class="notification-badge">3</span>
+                    @if($unreadNotificationsCount > 0)
+                        <span class="notification-badge">{{ $unreadNotificationsCount }}</span>
+                    @endif
                 </button>
                 <div class="user-dropdown">
                     <img src="https://i.pravatar.cc/150?img=12" alt="User Profile" class="user-avatar">
                     <div class="user-info-top">
-                        <h4>Mirza Mamun</h4>
-                        <p>Standard Account</p>
+                        <h4>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</h4>
+                        <p>{{ ucfirst(strtolower(auth()->user()->role)) }} Account</p>
                     </div>
                 </div>
             </div>

@@ -179,46 +179,79 @@
                     <h1>Accounts</h1>
                     <p>Manage checking and saving accounts.</p>
                 </div>
-                <button class="btn primary-btn" onclick="openModal('accountModal')"><i class="fa-solid fa-plus"></i> Open Account</button>
+                <!-- Removed Open Account Button -->
             </div>
             
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Account No</th>
-                            <th>Cust ID</th>
-                            <th>Account Type</th>
-                            <th>Balance</th>
-                            <th>Managing Employee</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ACC-9821</td>
-                            <td>C-1001</td>
-                            <td><span class="badge info">Saving</span></td>
-                            <td class="amount">$12,450.00</td>
-                            <td>Emp-005</td>
-                            <td>
-                                <button class="action-btn edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>ACC-4512</td>
-                            <td>C-1002</td>
-                            <td><span class="badge warning">Current</span></td>
-                            <td class="amount">$3,200.50</td>
-                            <td>Emp-002</td>
-                            <td>
-                                <button class="action-btn edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div style="margin-bottom: 30px;">
+                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">Pending Approvals</h2>
+                @if(session('success'))
+                    <div style="background-color: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Account No</th>
+                                <th>Customer Name</th>
+                                <th>NID</th>
+                                <th>Account Type</th>
+                                <th>Initial Balance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($pendingAccounts ?? [] as $account)
+                            <tr>
+                                <td>{{ $account->account_number }}</td>
+                                <td>{{ optional($account->user)->FULL_NAME ?? optional($account->user)->first_name ?? 'N/A' }}</td>
+                                <td>{{ optional($account->user)->NID ?? 'N/A' }}</td>
+                                <td><span class="badge pending">{{ $account->account_type }}</span></td>
+                                <td class="amount">${{ number_format($account->balance, 2) }}</td>
+                                <td>
+                                    <form action="{{ route('admin.approveAccount', $account->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn primary-btn small-btn" style="padding: 6px 12px; border-radius: 6px;"><i class="fa-solid fa-check"></i> Approve</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="6" style="text-align: center; padding: 20px;">No pending accounts</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">Active Accounts</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Account No</th>
+                                <th>Customer Name</th>
+                                <th>Account Type</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($activeAccounts ?? [] as $account)
+                            <tr>
+                                <td>{{ $account->account_number }}</td>
+                                <td>{{ optional($account->user)->FULL_NAME ?? optional($account->user)->first_name ?? 'N/A' }}</td>
+                                <td><span class="badge info">{{ $account->account_type }}</span></td>
+                                <td class="amount">${{ number_format($account->balance, 2) }}</td>
+                                <td><span class="badge success">{{ $account->status }}</span></td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;">No active accounts found</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 

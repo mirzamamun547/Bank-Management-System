@@ -29,6 +29,11 @@ class User extends Authenticatable
         'PASSWORD',
         'ROLE',
         'STATUS',
+        'FATHER_NAME',
+        'MOTHER_NAME',
+        'GENDER',
+        'PROFILE_PHOTO',
+        'SIGNATURE',
     ];
 
     // The attributes that should be hidden for serialization.
@@ -41,5 +46,29 @@ class User extends Authenticatable
     public function getAuthPassword()
     {
         return $this->password;
+    }
+
+    public function getRememberToken()
+    {
+        return $this->remember_token ?? $this->REMEMBER_TOKEN;
+    }
+
+    public function setRememberToken($value)
+    {
+        if (array_key_exists('remember_token', $this->getAttributes())) {
+            $this->remember_token = $value;
+        } else {
+            $this->REMEMBER_TOKEN = $value;
+        }
+    }
+
+    public function getRememberTokenName()
+    {
+        return array_key_exists('remember_token', $this->getAttributes()) ? 'remember_token' : 'REMEMBER_TOKEN';
+    }
+
+    public function accounts()
+    {
+        return $this->hasMany(Account::class, 'user_id', 'id');
     }
 }
