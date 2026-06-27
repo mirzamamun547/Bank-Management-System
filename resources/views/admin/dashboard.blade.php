@@ -21,7 +21,9 @@
             <li data-target="customers-section"><i class="fa-solid fa-users"></i> Customers</li>
             <li data-target="accounts-section"><i class="fa-solid fa-wallet"></i> Accounts</li>
             <li data-target="loans-section"><i class="fa-solid fa-hand-holding-dollar"></i> Loans & Payments</li>
-            <li data-target="employees-section"><i class="fa-solid fa-user-tie"></i> Employees</li>
+            <li data-target="deposit-section"><i class="fa-solid fa-money-bill-wave"></i> Deposit Money</li>
+            <li data-target="withdraw-section"><i class="fa-solid fa-hand-holding-dollar"></i> Withdraw Money</li>
+            <li data-target="transfer-section"><i class="fa-solid fa-right-left"></i> Money Transfer</li>
             <li data-target="profile-section"><i class="fa-solid fa-user"></i> My Profile</li>
         </ul>
         <div class="user-profile">
@@ -323,41 +325,271 @@
             </div>
         </section>
 
-        <!-- Employees Section -->
-        <section id="employees-section" class="content-section">
-            <div class="section-header flex-between">
-                <div>
-                    <h1>Employees</h1>
-                    <p>Manage bank staff and assignments.</p>
+        <!-- ============================================ -->
+        <!-- DEPOSIT MONEY SECTION -->
+        <!-- ============================================ -->
+        <section id="deposit-section" class="content-section">
+            <div class="section-header">
+                <h1><i class="fa-solid fa-money-bill-wave" style="color: var(--success); margin-right: 10px;"></i>Deposit Money</h1>
+                <p>Process a deposit for a verified customer.</p>
+            </div>
+
+            {{-- Flash messages --}}
+            @if(session('deposit_success'))
+                <div class="alert-box success-alert">
+                    <i class="fa-solid fa-circle-check"></i> {{ session('deposit_success') }}
                 </div>
-                <button class="btn primary-btn" onclick="openModal('employeeModal')"><i class="fa-solid fa-plus"></i> Add Employee</button>
+            @endif
+            @if(session('deposit_error'))
+                <div class="alert-box error-alert">
+                    <i class="fa-solid fa-circle-xmark"></i> {{ session('deposit_error') }}
+                </div>
+            @endif
+
+            {{-- STEP 1: Search Customer --}}
+            <div id="deposit-step1" class="workflow-card">
+                <div class="step-badge">Step 1</div>
+                <h3>Search Customer</h3>
+                <p class="step-desc">Enter the customer's Account Number and NID to verify identity.</p>
+                <form id="depositSearchForm" method="POST" action="{{ route('admin.deposit.search') }}">
+                    @csrf
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" name="account_number" placeholder="e.g. ACC-100001" required>
+                        </div>
+                        <div class="form-group">
+                            <label>NID Number</label>
+                            <input type="text" name="nid" placeholder="e.g. 1234567890" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Verify Customer</button>
+                </form>
             </div>
-            
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Emp ID</th>
-                            <th>Name</th>
-                            <th>Mobile No</th>
-                            <th>Address</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Emp-001</td>
-                            <td>David Miller</td>
-                            <td>(555) 111-2222</td>
-                            <td>789 Pine Rd, Gotham</td>
-                            <td>
-                                <button class="action-btn edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            {{-- STEP 2 & 3: Customer Verified + Enter Amount (shown via session) --}}
+            @if(session('deposit_customer'))
+            @php $dc = session('deposit_customer'); @endphp
+            <div class="workflow-card verified-card">
+                <div class="step-badge success-badge">✓ Verified</div>
+                <h3>Customer Verified</h3>
+                <div class="customer-info-grid">
+                    <div class="info-item"><span class="info-label">Customer Name</span><span class="info-value">{{ $dc['full_name'] }}</span></div>
+                    <div class="info-item"><span class="info-label">Account No</span><span class="info-value">{{ $dc['account_number'] }}</span></div>
+                    <div class="info-item"><span class="info-label">Current Balance</span><span class="info-value amount positive">${{ number_format($dc['balance'], 2) }}</span></div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.deposit.otp') }}" style="margin-top: 20px;">
+                    @csrf
+                    <input type="hidden" name="account_number" value="{{ $dc['account_number'] }}">
+                    <div class="form-group" style="max-width: 300px;">
+                        <label>Deposit Amount ($)</label>
+                        <input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" required style="font-size: 1.2rem; font-weight: 600;">
+                    </div>
+                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-paper-plane"></i> Generate OTP & Deposit</button>
+                </form>
             </div>
+            @endif
+
+            {{-- STEP 4 & 5: OTP Verification (shown via session) --}}
+            @if(session('deposit_otp_id'))
+            <div class="workflow-card otp-card">
+                <div class="step-badge">Step 4</div>
+                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
+                <p class="step-desc">An OTP has been sent to the customer's Notifications page. Ask the customer for the code.</p>
+                <form method="POST" action="{{ route('admin.deposit.verify') }}">
+                    @csrf
+                    <input type="hidden" name="otp_id" value="{{ session('deposit_otp_id') }}">
+                    <div class="form-group" style="max-width: 250px;">
+                        <label>Enter 6-digit OTP</label>
+                        <input type="text" name="otp" maxlength="6" placeholder="______" required
+                               style="font-size: 1.8rem; text-align: center; letter-spacing: 12px; font-weight: 700;">
+                    </div>
+                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-check-double"></i> Verify OTP & Complete Deposit</button>
+                </form>
+            </div>
+            @endif
+        </section>
+
+        <!-- ============================================ -->
+        <!-- WITHDRAW MONEY SECTION -->
+        <!-- ============================================ -->
+        <section id="withdraw-section" class="content-section">
+            <div class="section-header">
+                <h1><i class="fa-solid fa-hand-holding-dollar" style="color: var(--warning); margin-right: 10px;"></i>Withdraw Money</h1>
+                <p>Process a withdrawal for a verified customer.</p>
+            </div>
+
+            @if(session('withdraw_success'))
+                <div class="alert-box success-alert">
+                    <i class="fa-solid fa-circle-check"></i> {{ session('withdraw_success') }}
+                </div>
+            @endif
+            @if(session('withdraw_error'))
+                <div class="alert-box error-alert">
+                    <i class="fa-solid fa-circle-xmark"></i> {{ session('withdraw_error') }}
+                </div>
+            @endif
+
+            {{-- STEP 1: Search Customer --}}
+            <div id="withdraw-step1" class="workflow-card">
+                <div class="step-badge">Step 1</div>
+                <h3>Search Customer</h3>
+                <p class="step-desc">Enter the customer's Account Number and NID to verify identity.</p>
+                <form method="POST" action="{{ route('admin.withdraw.search') }}">
+                    @csrf
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" name="account_number" placeholder="e.g. ACC-100001" required>
+                        </div>
+                        <div class="form-group">
+                            <label>NID Number</label>
+                            <input type="text" name="nid" placeholder="e.g. 1234567890" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Verify Customer</button>
+                </form>
+            </div>
+
+            @if(session('withdraw_customer'))
+            @php $wc = session('withdraw_customer'); @endphp
+            <div class="workflow-card verified-card">
+                <div class="step-badge success-badge">✓ Verified</div>
+                <h3>Customer Verified</h3>
+                <div class="customer-info-grid">
+                    <div class="info-item"><span class="info-label">Customer Name</span><span class="info-value">{{ $wc['full_name'] }}</span></div>
+                    <div class="info-item"><span class="info-label">Account No</span><span class="info-value">{{ $wc['account_number'] }}</span></div>
+                    <div class="info-item"><span class="info-label">Current Balance</span><span class="info-value amount positive">${{ number_format($wc['balance'], 2) }}</span></div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.withdraw.otp') }}" style="margin-top: 20px;">
+                    @csrf
+                    <input type="hidden" name="account_number" value="{{ $wc['account_number'] }}">
+                    <div class="form-group" style="max-width: 300px;">
+                        <label>Withdrawal Amount ($)</label>
+                        <input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" max="{{ $wc['balance'] }}" required style="font-size: 1.2rem; font-weight: 600;">
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="background-color: var(--warning);"><i class="fa-solid fa-paper-plane"></i> Generate OTP & Withdraw</button>
+                </form>
+            </div>
+            @endif
+
+            @if(session('withdraw_otp_id'))
+            <div class="workflow-card otp-card">
+                <div class="step-badge">Step 4</div>
+                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
+                <p class="step-desc">An OTP has been sent to the customer's Notifications page. Ask the customer for the code.</p>
+                <form method="POST" action="{{ route('admin.withdraw.verify') }}">
+                    @csrf
+                    <input type="hidden" name="otp_id" value="{{ session('withdraw_otp_id') }}">
+                    <div class="form-group" style="max-width: 250px;">
+                        <label>Enter 6-digit OTP</label>
+                        <input type="text" name="otp" maxlength="6" placeholder="______" required
+                               style="font-size: 1.8rem; text-align: center; letter-spacing: 12px; font-weight: 700;">
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="background-color: var(--warning);"><i class="fa-solid fa-check-double"></i> Verify OTP & Complete Withdrawal</button>
+                </form>
+            </div>
+            @endif
+        </section>
+
+        <!-- ============================================ -->
+        <!-- MONEY TRANSFER SECTION -->
+        <!-- ============================================ -->
+        <section id="transfer-section" class="content-section">
+            <div class="section-header">
+                <h1><i class="fa-solid fa-right-left" style="color: var(--purple); margin-right: 10px;"></i>Money Transfer</h1>
+                <p>Transfer funds between two verified accounts.</p>
+            </div>
+
+            @if(session('transfer_success'))
+                <div class="alert-box success-alert">
+                    <i class="fa-solid fa-circle-check"></i> {{ session('transfer_success') }}
+                </div>
+            @endif
+            @if(session('transfer_error'))
+                <div class="alert-box error-alert">
+                    <i class="fa-solid fa-circle-xmark"></i> {{ session('transfer_error') }}
+                </div>
+            @endif
+
+            {{-- STEP 1: Search Source Account --}}
+            <div class="workflow-card">
+                <div class="step-badge">Step 1</div>
+                <h3>Verify Source Account</h3>
+                <p class="step-desc">Enter the sender's Account Number, NID, and the destination account.</p>
+                <form method="POST" action="{{ route('admin.transfer.search') }}">
+                    @csrf
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>From Account Number</label>
+                            <input type="text" name="from_account" placeholder="e.g. ACC-100001" required>
+                        </div>
+                        <div class="form-group">
+                            <label>NID Number (Sender)</label>
+                            <input type="text" name="nid" placeholder="e.g. 1234567890" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>To Account Number (Destination)</label>
+                        <input type="text" name="to_account" placeholder="e.g. ACC-100045" required>
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="background-color: var(--purple);"><i class="fa-solid fa-magnifying-glass"></i> Verify Accounts</button>
+                </form>
+            </div>
+
+            @if(session('transfer_accounts'))
+            @php $ta = session('transfer_accounts'); @endphp
+            <div class="workflow-card verified-card">
+                <div class="step-badge success-badge">✓ Verified</div>
+                <h3>Accounts Verified</h3>
+                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center;">
+                    <div class="customer-info-grid" style="border: 1px solid var(--border); padding: 16px; border-radius: 10px;">
+                        <h4 style="color: var(--danger); margin-bottom: 8px;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sender</h4>
+                        <div class="info-item"><span class="info-label">Name</span><span class="info-value">{{ $ta['from_name'] }}</span></div>
+                        <div class="info-item"><span class="info-label">Account</span><span class="info-value">{{ $ta['from_account'] }}</span></div>
+                        <div class="info-item"><span class="info-label">Balance</span><span class="info-value amount positive">${{ number_format($ta['from_balance'], 2) }}</span></div>
+                    </div>
+                    <div style="font-size: 2rem; color: var(--purple);"><i class="fa-solid fa-arrow-right"></i></div>
+                    <div class="customer-info-grid" style="border: 1px solid var(--border); padding: 16px; border-radius: 10px;">
+                        <h4 style="color: var(--success); margin-bottom: 8px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Receiver</h4>
+                        <div class="info-item"><span class="info-label">Name</span><span class="info-value">{{ $ta['to_name'] }}</span></div>
+                        <div class="info-item"><span class="info-label">Account</span><span class="info-value">{{ $ta['to_account'] }}</span></div>
+                        <div class="info-item"><span class="info-label">Balance</span><span class="info-value amount positive">${{ number_format($ta['to_balance'], 2) }}</span></div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.transfer.otp') }}" style="margin-top: 20px;">
+                    @csrf
+                    <input type="hidden" name="from_account" value="{{ $ta['from_account'] }}">
+                    <input type="hidden" name="to_account" value="{{ $ta['to_account'] }}">
+                    <div class="form-group" style="max-width: 300px;">
+                        <label>Transfer Amount ($)</label>
+                        <input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" max="{{ $ta['from_balance'] }}" required style="font-size: 1.2rem; font-weight: 600;">
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="background-color: var(--purple);"><i class="fa-solid fa-paper-plane"></i> Generate OTP & Transfer</button>
+                </form>
+            </div>
+            @endif
+
+            @if(session('transfer_otp_id'))
+            <div class="workflow-card otp-card">
+                <div class="step-badge">Step 4</div>
+                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
+                <p class="step-desc">An OTP has been sent to the sender's Notifications page. Ask the customer for the code.</p>
+                <form method="POST" action="{{ route('admin.transfer.verify') }}">
+                    @csrf
+                    <input type="hidden" name="otp_id" value="{{ session('transfer_otp_id') }}">
+                    <div class="form-group" style="max-width: 250px;">
+                        <label>Enter 6-digit OTP</label>
+                        <input type="text" name="otp" maxlength="6" placeholder="______" required
+                               style="font-size: 1.8rem; text-align: center; letter-spacing: 12px; font-weight: 700;">
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="background-color: var(--purple);"><i class="fa-solid fa-check-double"></i> Verify OTP & Complete Transfer</button>
+                </form>
+            </div>
+            @endif
         </section>
 
         <!-- My Profile Section -->
@@ -445,12 +677,44 @@
         @if(session('profile_success') || session('password_success') || $errors->has('password_error') || $errors->has('new_password'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                
                 document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
                 document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                
                 document.querySelector('[data-target="profile-section"]').classList.add('active');
                 document.getElementById('profile-section').classList.add('active');
+            });
+        </script>
+        @endif
+
+        {{-- Auto-navigate to deposit/withdraw/transfer section after form submission --}}
+        @if(session('deposit_customer') || session('deposit_otp_id') || session('deposit_success') || session('deposit_error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                document.querySelector('[data-target="deposit-section"]').classList.add('active');
+                document.getElementById('deposit-section').classList.add('active');
+            });
+        </script>
+        @endif
+
+        @if(session('withdraw_customer') || session('withdraw_otp_id') || session('withdraw_success') || session('withdraw_error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                document.querySelector('[data-target="withdraw-section"]').classList.add('active');
+                document.getElementById('withdraw-section').classList.add('active');
+            });
+        </script>
+        @endif
+
+        @if(session('transfer_accounts') || session('transfer_otp_id') || session('transfer_success') || session('transfer_error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                document.querySelector('[data-target="transfer-section"]').classList.add('active');
+                document.getElementById('transfer-section').classList.add('active');
             });
         </script>
         @endif
@@ -555,33 +819,7 @@
         </div>
     </div>
 
-    <!-- Employee Modal -->
-    <div id="employeeModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Add Employee</h2>
-                <button class="close-btn" onclick="closeModal('employeeModal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form class="modal-form">
-                <div class="form-group">
-                    <label>Employee Name</label>
-                    <input type="text" placeholder="Full Name" required>
-                </div>
-                <div class="form-group">
-                    <label>Mobile Number</label>
-                    <input type="text" placeholder="e.g. (555) 000-0000" required>
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <textarea rows="3" placeholder="Residential address" required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn outline" onclick="closeModal('employeeModal')">Cancel</button>
-                    <button type="submit" class="btn primary-btn">Save Employee</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <script src="script.js"></script>
 </body>

@@ -20,6 +20,22 @@ use App\Http\Controllers\AdminController;
 
 Route::get('/dashboard', [AdminController::class, 'dashboard'])->middleware('auth')->name('admin.dashboard');
 Route::post('/admin/approve-account/{id}', [AdminController::class, 'approveAccount'])->middleware('auth')->name('admin.approveAccount');
+
+// Deposit routes
+Route::post('/admin/deposit/search',  [AdminController::class, 'depositSearch'])->middleware('auth')->name('admin.deposit.search');
+Route::post('/admin/deposit/otp',     [AdminController::class, 'depositGenerateOtp'])->middleware('auth')->name('admin.deposit.otp');
+Route::post('/admin/deposit/verify',  [AdminController::class, 'depositVerifyOtp'])->middleware('auth')->name('admin.deposit.verify');
+
+// Withdraw routes
+Route::post('/admin/withdraw/search', [AdminController::class, 'withdrawSearch'])->middleware('auth')->name('admin.withdraw.search');
+Route::post('/admin/withdraw/otp',    [AdminController::class, 'withdrawGenerateOtp'])->middleware('auth')->name('admin.withdraw.otp');
+Route::post('/admin/withdraw/verify', [AdminController::class, 'withdrawVerifyOtp'])->middleware('auth')->name('admin.withdraw.verify');
+
+// Transfer routes
+Route::post('/admin/transfer/search', [AdminController::class, 'transferSearch'])->middleware('auth')->name('admin.transfer.search');
+Route::post('/admin/transfer/otp',    [AdminController::class, 'transferGenerateOtp'])->middleware('auth')->name('admin.transfer.otp');
+Route::post('/admin/transfer/verify', [AdminController::class, 'transferVerifyOtp'])->middleware('auth')->name('admin.transfer.verify');
+
 Route::get('/user-dashboard', function () { return view('user.dashboard'); })->middleware('auth');
 
 use App\Http\Controllers\UserController;

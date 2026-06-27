@@ -469,3 +469,124 @@ header {
     justify-content: flex-end;
     gap: 12px;
 }
+
+/* =============================================
+   Workflow Cards (Deposit / Withdraw / Transfer)
+   ============================================= */
+.workflow-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9));
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    animation: slideUp 0.4s ease;
+}
+
+.workflow-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.workflow-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+}
+
+.step-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.step-badge {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.step-badge.success-badge {
+    background: var(--success);
+}
+
+/* Verified card green left border */
+.verified-card {
+    border-left: 4px solid var(--success);
+    background: linear-gradient(135deg, rgba(209,250,229,0.25), rgba(255,255,255,0.95));
+}
+
+/* OTP card blue left border */
+.otp-card {
+    border-left: 4px solid var(--primary);
+    background: linear-gradient(135deg, rgba(219,234,254,0.25), rgba(255,255,255,0.95));
+}
+
+/* Customer info grid */
+.customer-info-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(0,0,0,0.06);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* Alert boxes */
+.alert-box {
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    animation: slideUp 0.3s ease;
+}
+
+.success-alert {
+    background: linear-gradient(135deg, #d1fae5, #ecfdf5);
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.error-alert {
+    background: linear-gradient(135deg, #fee2e2, #fef2f2);
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
