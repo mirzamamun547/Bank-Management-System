@@ -1,4 +1,4 @@
--- Oracle PL/SQL Stored Procedures for Nexus Bank Authentication
+
 
 CREATE OR REPLACE PROCEDURE CREATE_CUSTOMER (
     p_first_name   IN  VARCHAR2,
@@ -15,11 +15,11 @@ CREATE OR REPLACE PROCEDURE CREATE_CUSTOMER (
 ) AS
     v_cust_seq NUMBER;
 BEGIN
-    -- 1. Generate the unique Customer ID
+    
     SELECT CUSTOMER_ID_SEQ.NEXTVAL INTO v_cust_seq FROM DUAL;
     o_customer_id := 'CUST-' || v_cust_seq;
 
-    -- 2. Insert the customer record
+
     INSERT INTO USERS (
         CUSTOMER_ID,
         FIRST_NAME,
@@ -48,8 +48,7 @@ BEGIN
         p_status
     );
 
-    -- 3. Commit the transaction (standard for registration procedures, 
-    -- but can be handled by the caller as well)
+    
     COMMIT;
 
 EXCEPTION

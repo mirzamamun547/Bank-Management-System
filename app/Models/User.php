@@ -11,12 +11,11 @@ class User extends Authenticatable
 
     protected $table = 'USERS';
 
-    // Disable Laravel's default auto-increment if handled by Oracle trigger
-    // Actually, Oracle trigger handles it on INSERT, so Laravel doesn't need to send ID.
+
     public $incrementing = true;
     protected $primaryKey = 'id';
 
-    // The attributes that are mass assignable.
+    
     protected $fillable = [
         'FIRST_NAME',
         'LAST_NAME',
@@ -36,13 +35,13 @@ class User extends Authenticatable
         'SIGNATURE',
     ];
 
-    // The attributes that should be hidden for serialization.
+
     protected $hidden = [
         'PASSWORD',
     ];
 
-    // Get the password for the user (Laravel looks for 'password' lowercase usually, 
-    // but we can tell it to use PASSWORD by overriding)
+ 
+   
     public function getAuthPassword()
     {
         return $this->password;

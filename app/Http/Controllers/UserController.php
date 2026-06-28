@@ -9,14 +9,12 @@ use App\Models\User;
 
 class UserController extends Controller
 {
-    // Show profile page
+
     public function showProfile()
     {
         $user = Auth::user();
         return view('user.profile', compact('user'));
     }
-
-    // Update profile details
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
@@ -28,11 +26,7 @@ class UserController extends Controller
             'address' => 'nullable|string|max:255',
         ]);
 
-        // Map frontend inputs to Oracle column names (which are handled dynamically by Eloquent)
-        // Oracle usually expects upper case column names for updates if not handled by lowercase mapping.
-        // Laravel's array attributes will handle lowercase since we mapped the primary key.
-        // The trigger updates FULL_NAME automatically on INSERT, but not UPDATE.
-        // Let's update FULL_NAME as well just in case.
+     
         
         $user->first_name = trim($request->first_name);
         $user->last_name = trim($request->last_name);
@@ -52,7 +46,7 @@ class UserController extends Controller
 
         $request->validate([
             'current_password' => 'required',
-            'new_password' => 'required|min:6|confirmed', // expects new_password_confirmation field
+            'new_password' => 'required|min:6|confirmed', 
         ]);
 
         if (!Hash::check($request->current_password, $user->password)) {
@@ -97,7 +91,7 @@ class UserController extends Controller
 
         $user = Auth::user();
         
-        // Update user details
+        
         if ($request->filled('father_name')) $user->FATHER_NAME = $request->father_name;
         if ($request->filled('mother_name')) $user->MOTHER_NAME = $request->mother_name;
         if ($request->filled('gender')) $user->GENDER = $request->gender;
@@ -118,7 +112,7 @@ class UserController extends Controller
 
         $user->save();
         
-        // Map account type
+      
         $accountTypeMap = [
             'Saving' => 'Savings Account',
             'Current' => 'Current Account',

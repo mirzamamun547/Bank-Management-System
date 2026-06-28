@@ -10,7 +10,7 @@
 </head>
 <body>
 
-    <!-- Sidebar Navigation -->
+    
     <nav class="sidebar">
         <div class="logo">
             <i class="fa-solid fa-building-columns"></i>
@@ -35,10 +35,10 @@
         </div>
     </nav>
 
-    <!-- Main Content Area -->
+   
     <main class="main-content">
         
-        <!-- Header -->
+       
         <header>
             <div class="search-bar">
                 <i class="fa-solid fa-search"></i>
@@ -204,14 +204,14 @@
             </div>
         </section>
 
-        <!-- Accounts Section -->
+     
         <section id="accounts-section" class="content-section">
             <div class="section-header flex-between">
                 <div>
                     <h1>Accounts</h1>
                     <p>Manage checking and saving accounts.</p>
                 </div>
-                <!-- Removed Open Account Button -->
+           
             </div>
             
             <div style="margin-bottom: 30px;">
@@ -287,7 +287,7 @@
             </div>
         </section>
 
-        <!-- Loans Section -->
+      
         <section id="loans-section" class="content-section">
             <div class="section-header flex-between">
                 <div>
@@ -325,9 +325,8 @@
             </div>
         </section>
 
-        <!-- ============================================ -->
-        <!-- DEPOSIT MONEY SECTION -->
-        <!-- ============================================ -->
+       
+      
         <section id="deposit-section" class="content-section">
             <div class="section-header">
                 <h1><i class="fa-solid fa-money-bill-wave" style="color: var(--success); margin-right: 10px;"></i>Deposit Money</h1>
@@ -411,9 +410,8 @@
             @endif
         </section>
 
-        <!-- ============================================ -->
-        <!-- WITHDRAW MONEY SECTION -->
-        <!-- ============================================ -->
+        
+        
         <section id="withdraw-section" class="content-section">
             <div class="section-header">
                 <h1><i class="fa-solid fa-hand-holding-dollar" style="color: var(--warning); margin-right: 10px;"></i>Withdraw Money</h1>
@@ -494,9 +492,9 @@
             @endif
         </section>
 
-        <!-- ============================================ -->
-        <!-- MONEY TRANSFER SECTION -->
-        <!-- ============================================ -->
+       
+    
+      
         <section id="transfer-section" class="content-section">
             <div class="section-header">
                 <h1><i class="fa-solid fa-right-left" style="color: var(--purple); margin-right: 10px;"></i>Money Transfer</h1>
@@ -592,7 +590,7 @@
             @endif
         </section>
 
-        <!-- My Profile Section -->
+      
         <section id="profile-section" class="content-section">
             <div class="section-header">
                 <h1>My Profile</h1>
@@ -600,7 +598,7 @@
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                <!-- Profile Edit Form -->
+        
                 <div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                     <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-user-pen" style="color: var(--primary); margin-right: 8px;"></i> Edit Profile Details</h3>
                     @if(session('profile_success'))
@@ -636,7 +634,7 @@
                     </form>
                 </div>
 
-                <!-- Security Form -->
+             
                 <div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                     <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-shield" style="color: var(--danger); margin-right: 8px;"></i> Security Settings</h3>
                     @if(session('password_success'))
@@ -721,9 +719,7 @@
 
     </main>
 
-    <!-- Modals (Add Forms) -->
     
-    <!-- Customer Modal -->
     <div id="customerModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
@@ -757,7 +753,7 @@
         </div>
     </div>
 
-    <!-- Account Modal -->
+   
     <div id="accountModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
@@ -795,7 +791,7 @@
         </div>
     </div>
 
-    <!-- Loan Modal -->
+
     <div id="loanModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">

@@ -17,7 +17,7 @@ class AuthController extends Controller
         return view('login', compact('role'));
     }
 
-    // Handle Login
+
     public function login(Request $request)
     {
         $request->validate([
@@ -33,12 +33,12 @@ class AuthController extends Controller
         $expectedRole = $request->input('expected_role');
 
         if ($expectedRole === 'customer') {
-            // Find user by NID or CUSTOMER_ID for customers
+           
             $user = User::whereRaw('LOWER(NID) = ?', [$loginId])
                         ->orWhereRaw('LOWER(CUSTOMER_ID) = ?', [$loginId])
                         ->first();
         } else {
-            // Find user by EMAIL or CUSTOMER_ID for employees
+           
             $user = User::whereRaw('LOWER(EMAIL) = ?', [$loginId])
                         ->orWhereRaw('LOWER(CUSTOMER_ID) = ?', [$loginId])
                         ->first();
@@ -47,7 +47,7 @@ class AuthController extends Controller
         if ($user) {
              \Illuminate\Support\Facades\Log::info("User array keys: " . implode(', ', array_keys($user->getAttributes())));
              
-             // Oracle driver might return lowercase column names like 'password' instead of 'PASSWORD'
+             
              $userPassword = $user->PASSWORD ?? $user->password;
              
              \Illuminate\Support\Facades\Log::info("Stored Password Hash: " . $userPassword);
@@ -75,7 +75,7 @@ class AuthController extends Controller
                 $remember = $request->has('remember');
                 Auth::login($user, $remember);
                 
-                // Redirect based on role
+               
                 if ($role === 'EMPLOYEE' || $role === 'ADMIN') {
                     return redirect('/dashboard');
                 } else {
@@ -89,13 +89,12 @@ class AuthController extends Controller
         return back()->withErrors(['login' => 'Invalid ID/Email or password.']);
     }
 
-    // Show signup page
+  
     public function showSignup()
     {
         return view('signup');
     }
 
-    // Handle Signup calling PL/SQL Procedure
     public function signup(Request $request)
     {
         $request->validate([
@@ -109,7 +108,7 @@ class AuthController extends Controller
             'password' => 'required|min:6|same:confirmPassword',
         ]);
 
-        // Check if email already exists
+      
         if (User::whereRaw('LOWER(EMAIL) = ?', [strtolower($request->email)])->exists()) {
             return back()->withErrors(['email' => 'An account with this email address already exists.'])->withInput();
         }
@@ -117,7 +116,7 @@ class AuthController extends Controller
         $hashedPassword = Hash::make($request->password);
         $customerId = '';
 
-        // Extract to local variables — bindParam() needs real references, not magic properties
+       
         $firstName  = $request->input('firstName');
         $lastName   = $request->input('lastName');
         $email      = $request->input('email');
@@ -127,7 +126,7 @@ class AuthController extends Controller
         $nid        = $request->input('nid');
 
         try {
-            // Call the Oracle PL/SQL Stored Procedure
+            
             $pdo = DB::getPdo();
             $stmt = $pdo->prepare("BEGIN CREATE_CUSTOMER(:p_first_name, :p_last_name, :p_email, :p_phone, :p_address, TO_DATE(:p_dob, 'YYYY-MM-DD'), :p_nid, :p_password, 'CUSTOMER', 'ACTIVE', :o_customer_id); END;");
 
@@ -140,7 +139,7 @@ class AuthController extends Controller
             $stmt->bindParam(':p_nid',        $nid);
             $stmt->bindParam(':p_password',   $hashedPassword);
 
-            // Bind the output variable
+        
             $stmt->bindParam(':o_customer_id', $customerId, \PDO::PARAM_STR, 20);
 
             $stmt->execute();
@@ -152,7 +151,7 @@ class AuthController extends Controller
         }
     }
 
-    // Handle Logout
+   
     public function logout(Request $request)
     {
         Auth::logout();

@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="user-styles.css">
 </head>
 <body>
-    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="/" class="logo">
@@ -32,9 +31,9 @@
         <a href="/" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
     </nav>
 
-    <!-- Main Wrapper -->
+   
     <div class="main-wrapper">
-        <!-- Top Bar -->
+      
         <header class="topbar">
             <div class="topbar-left">
                 <button class="menu-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -69,7 +68,7 @@
             </div>
         </header>
 
-        <!-- Dashboard Content -->
+       
         <main class="dashboard-content" style="display: block;">
             @if(session('success'))
                 <div style="background-color: var(--success); color: white; padding: 12px; border-radius: 8px; margin-bottom: 24px;">
@@ -87,7 +86,7 @@
                 </button>
             </div>
 
-            <!-- Filters -->
+          
             <form action="{{ route('user.accounts') }}" method="GET" style="margin-bottom: 24px; display: flex; gap: 16px; align-items: center;">
                 <label style="font-weight: 500; color: var(--text-main);"><i class="fa-solid fa-filter"></i> Filter By:</label>
                 <select name="type" class="form-control" style="width: 200px;" onchange="this.form.submit()">
@@ -98,7 +97,7 @@
                 </select>
             </form>
 
-            <!-- Account Cards Grid -->
+           
             <div class="summary-cards" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
                 @forelse($accounts as $account)
                 <div class="card" style="position: relative; overflow: hidden; {{ $account->status == 'Blocked' ? 'opacity: 0.8;' : '' }}">
@@ -142,16 +141,16 @@
         </main>
     </div>
 
-    <!-- Create Account Modal -->
+
     <div id="createAccountModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 20px;">
         <div style="background: #f8f9fa; padding: 24px; border-radius: 12px; width: 100%; max-width: 900px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
             
             <form action="{{ url('/user-accounts') }}" method="POST" enctype="multipart/form-data" style="display: flex; gap: 24px;">
                 @csrf
                 
-                <!-- Left Sidebar for Uploads -->
+             
                 <div style="width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; align-items: center; padding-top: 20px;">
-                    <!-- Profile Photo -->
+                  
                     <div style="width: 150px; height: 150px; background: #e9ecef; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; position: relative; overflow: hidden;">
                         <i class="fa-solid fa-user" style="font-size: 5rem; color: #ced4da;"></i>
                         <input type="file" name="profile_photo" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
@@ -162,7 +161,7 @@
 
                     <hr style="width: 100%; border: 0; border-top: 1px solid #dee2e6; margin: 10px 0;">
 
-                    <!-- Signature -->
+                  
                     <div style="width: 150px; height: 80px; background: #e9ecef; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; position: relative; overflow: hidden;">
                         <i class="fa-solid fa-signature" style="font-size: 2.5rem; color: #ced4da;"></i>
                         <input type="file" name="signature" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
@@ -172,7 +171,7 @@
                     </button>
                 </div>
 
-                <!-- Right Form Area -->
+                
                 <div style="flex-grow: 1; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                     
                     <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
@@ -238,7 +237,7 @@
                         <input type="text" name="address" value="{{ auth()->user()->ADDRESS ?? '' }}" style="background: #f1f3f5; border: none; padding: 8px 12px; border-radius: 4px; width: 100%;">
                     </div>
 
-                    <!-- Buttons -->
+                    
                     <div style="display: flex; justify-content: flex-end; gap: 16px;">
                         <button type="button" onclick="document.getElementById('createAccountModal').style.display='none'" style="background: #003366; color: white; border: none; padding: 10px 32px; border-radius: 24px; font-weight: bold; cursor: pointer; font-size: 1rem;">Cancel</button>
                         <button type="submit" style="background: #003366; color: white; border: none; padding: 10px 32px; border-radius: 24px; font-weight: bold; cursor: pointer; font-size: 1rem;">OPEN</button>

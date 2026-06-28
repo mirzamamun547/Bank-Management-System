@@ -11,34 +11,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Transactions table to log all deposits, withdrawals, transfers
+        
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')->constrained('accounts')->onDelete('cascade');
-            $table->string('transaction_type'); // DEPOSIT, WITHDRAW, TRANSFER
+            $table->string('transaction_type');
             $table->decimal('amount', 15, 2);
-            $table->string('reference')->nullable(); // e.g. destination account for transfers
+            $table->string('reference')->nullable();
             $table->string('description')->nullable();
             $table->timestamps();
         });
 
-        // OTP verification table
+        
         Schema::create('otp_verification', function (Blueprint $table) {
             $table->id();
             $table->string('account_number');
-            $table->string('receiver_account')->nullable(); // for transfers
+            $table->string('receiver_account')->nullable();
             $table->decimal('amount', 15, 2);
             $table->string('otp', 6);
-            $table->string('type')->default('DEPOSIT'); // DEPOSIT, WITHDRAW, TRANSFER
+            $table->string('type')->default('DEPOSIT'); 
             $table->dateTime('expires_at');
             $table->timestamps();
         });
 
-        // Audit log table
+        
         Schema::create('audit_log', function (Blueprint $table) {
             $table->id();
             $table->string('table_name');
-            $table->string('action'); // INSERT, UPDATE, DELETE
+            $table->string('action'); 
             $table->string('performed_by')->nullable();
             $table->text('details')->nullable();
             $table->timestamps();
