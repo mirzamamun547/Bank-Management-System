@@ -22,7 +22,6 @@
             <li><a href="/user-dashboard"><i class="fa-solid fa-house"></i> Dashboard</a></li>
             <li><a href="/user-profile" class="active"><i class="fa-solid fa-user"></i> My Profile</a></li>
             <li><a href="/user-accounts"><i class="fa-solid fa-wallet"></i> My Accounts</a></li>
-            <li><a href="/user-deposit"><i class="fa-solid fa-money-bill-transfer"></i> Deposit / Withdraw</a></li>
             <li><a href="/user-transfer"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fund Transfer</a></li>
             <li><a href="/user-transactions"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
             <li><a href="/user-dashboard"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>

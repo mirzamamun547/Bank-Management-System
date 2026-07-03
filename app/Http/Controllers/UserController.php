@@ -153,4 +153,92 @@ class UserController extends Controller
 
         return view('user.notifications', compact('notifications'));
     }
+
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $accounts = $user->accounts()->where('status', 'Active')->get();
+        
+        $totalBalance = $accounts->sum('balance');
+        $recentTransactions = collect(); // We will fetch from all accounts
+        
+        if ($accounts->isNotEmpty()) {
+            $accountIds = $accounts->pluck('id')->toArray();
+            $recentTransactions = \Illuminate\Support\Facades\DB::table('transactions')
+                ->whereIn('account_id', $accountIds)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+        }
+
+        $notifications = \Illuminate\Support\Facades\DB::table('notifications')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('user.dashboard', compact('user', 'accounts', 'totalBalance', 'recentTransactions', 'notifications'));
+    }
+
+    public function indexTransfer()
+    {
+        $user = Auth::user();
+        $accounts = $user->accounts()->where('status', 'Active')->get();
+        return view('user.transfer', compact('accounts'));
+    }
+
+    public function storeTransfer(Request $request)
+    {
+        $request->validate([
+            'from_account' => 'required|string',
+            'to_account' => 'required|string',
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        $user = Auth::user();
+        
+        // Verify from account belongs to user
+        $fromAccount = $user->accounts()->where('account_number', $request->from_account)->where('status', 'Active')->first();
+        if (!$fromAccount) {
+            return back()->with('error', 'Invalid source account.');
+        }
+
+        try {
+            $pdo = \Illuminate\Support\Facades\DB::getPdo();
+            $stmt = $pdo->prepare("BEGIN DO_TRANSFER(:from_acc, :to_acc, :amount, :performed_by); END;");
+            $stmt->execute([
+                'from_acc' => $request->from_account,
+                'to_acc' => $request->to_account,
+                'amount' => $request->amount,
+                'performed_by' => $user->full_name,
+            ]);
+            
+            return back()->with('success', 'Transfer completed successfully!');
+        } catch (\Exception $e) {
+            // Extract ORA error message safely
+            $errorMsg = $e->getMessage();
+            if (preg_match('/ORA-\d+: (.*)/', $errorMsg, $matches)) {
+                $errorMsg = $matches[1];
+            }
+            return back()->with('error', 'Transfer failed: ' . $errorMsg);
+        }
+    }
+
+    public function indexTransactions(Request $request)
+    {
+        $user = Auth::user();
+        $accounts = $user->accounts()->pluck('id')->toArray();
+
+        $query = \Illuminate\Support\Facades\DB::table('transactions')
+                    ->whereIn('account_id', $accounts)
+                    ->orderBy('created_at', 'desc');
+
+        if ($request->filled('type') && $request->type !== 'All') {
+            $query->where('transaction_type', $request->type);
+        }
+
+        $transactions = $query->get();
+
+        return view('user.transactions', compact('transactions'));
+    }
 }

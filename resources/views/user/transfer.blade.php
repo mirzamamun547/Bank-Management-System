@@ -22,7 +22,6 @@
             <li><a href="/user-dashboard"><i class="fa-solid fa-house"></i> Dashboard</a></li>
             <li><a href="/user-profile"><i class="fa-solid fa-user"></i> My Profile</a></li>
             <li><a href="/user-accounts"><i class="fa-solid fa-wallet"></i> My Accounts</a></li>
-            <li><a href="/user-deposit"><i class="fa-solid fa-money-bill-transfer"></i> Deposit / Withdraw</a></li>
             <li><a href="/user-transfer" class="active"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fund Transfer</a></li>
             <li><a href="/user-transactions"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
             <li><a href="/user-dashboard"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>
@@ -83,31 +82,51 @@
                         <h3><i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--accent); margin-right: 8px;"></i> Make a Transfer</h3>
                     </div>
                     
-                    <form>
+                    @if(session('success'))
+                        <div style="padding: 12px; background: #e6f7eb; color: #2e7d32; border-radius: 6px; margin-bottom: 24px;">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if(session('error'))
+                        <div style="padding: 12px; background: #fdeded; color: #c62828; border-radius: 6px; margin-bottom: 24px;">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    @if($errors->any())
+                        <div style="padding: 12px; background: #fdeded; color: #c62828; border-radius: 6px; margin-bottom: 24px;">
+                            @foreach ($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    @endif
+                    
+                    <form action="{{ route('user.transfer.store') }}" method="POST">
+                        @csrf
                         <div class="form-group">
                             <label>From Account</label>
-                            <select class="form-control">
-                                <option>Savings Account (ACC-10492) - Balance: $24,500.00</option>
-                                <option>Current Account (ACC-10493) - Balance: $5,200.00</option>
+                            <select name="from_account" class="form-control" required>
+                                @foreach($accounts as $account)
+                                <option value="{{ $account->account_number }}">{{ $account->account_type }} ({{ $account->account_number }}) - Balance: ${{ number_format($account->balance, 2) }}</option>
+                                @endforeach
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label>To Account Number</label>
-                            <input type="text" class="form-control" placeholder="Enter recipient account number">
+                            <input type="text" name="to_account" class="form-control" placeholder="Enter recipient account number" required>
                         </div>
                         
                         <div class="form-group">
                             <label>Amount ($)</label>
-                            <input type="number" class="form-control" placeholder="0.00">
+                            <input type="number" name="amount" class="form-control" placeholder="0.00" step="0.01" min="1" required>
                         </div>
                         
                         <div class="form-group">
                             <label>Description (Optional)</label>
-                            <input type="text" class="form-control" placeholder="What is this transfer for?">
+                            <input type="text" name="description" class="form-control" placeholder="What is this transfer for?">
                         </div>
                         
-                        <button type="button" class="btn-accent" style="margin-top: 16px;">
+                        <button type="submit" class="btn-accent" style="margin-top: 16px;">
                             <i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i> Transfer Now
                         </button>
                     </form>
@@ -130,27 +149,29 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $accountIds = $accounts->pluck('id')->toArray();
+                            $transfers = \Illuminate\Support\Facades\DB::table('transactions')
+                                ->whereIn('account_id', $accountIds)
+                                ->whereIn('transaction_type', ['TRANSFER_OUT', 'TRANSFER_IN'])
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+                        @endphp
+                        @forelse($transfers as $tx)
                         <tr>
-                            <td>08-06-2026</td>
-                            <td>ACC-10492</td>
-                            <td>ACC-55219 (External)</td>
-                            <td class="amount debit">- $1,200.00</td>
+                            <td>{{ \Carbon\Carbon::parse($tx->created_at)->format('d-m-Y') }}</td>
+                            <td>{{ $tx->transaction_type == 'TRANSFER_OUT' ? 'Your Account' : $tx->reference }}</td>
+                            <td>{{ $tx->transaction_type == 'TRANSFER_OUT' ? $tx->reference : 'Your Account' }}</td>
+                            <td class="amount {{ $tx->transaction_type == 'TRANSFER_OUT' ? 'debit' : 'credit' }}">
+                                {{ $tx->transaction_type == 'TRANSFER_OUT' ? '-' : '+' }} ${{ number_format($tx->amount, 2) }}
+                            </td>
                             <td><span class="badge success">Completed</span></td>
                         </tr>
+                        @empty
                         <tr>
-                            <td>05-06-2026</td>
-                            <td>ACC-10492</td>
-                            <td>ACC-10493 (Self)</td>
-                            <td class="amount debit">- $500.00</td>
-                            <td><span class="badge success">Completed</span></td>
+                            <td colspan="5" style="text-align: center;">No transfers found.</td>
                         </tr>
-                        <tr>
-                            <td>28-05-2026</td>
-                            <td>ACC-10493</td>
-                            <td>ACC-88321 (External)</td>
-                            <td class="amount debit">- $250.00</td>
-                            <td><span class="badge pending">Processing</span></td>
-                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

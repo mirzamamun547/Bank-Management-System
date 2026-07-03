@@ -93,7 +93,7 @@ class AuthController extends Controller
     public function showSignup()
     {
         return view('signup');
-    }
+    }//signup
 
     public function signup(Request $request)
     {

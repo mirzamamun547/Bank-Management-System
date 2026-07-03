@@ -24,7 +24,6 @@
             <li><a href="/user-dashboard" class="active"><i class="fa-solid fa-house"></i> Dashboard</a></li>
             <li><a href="/user-profile"><i class="fa-solid fa-user"></i> My Profile</a></li>
             <li><a href="/user-accounts"><i class="fa-solid fa-wallet"></i> My Accounts</a></li>
-            <li><a href="/user-deposit"><i class="fa-solid fa-money-bill-transfer"></i> Deposit / Withdraw</a></li>
             <li><a href="/user-transfer"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fund Transfer</a></li>
             <li><a href="/user-transactions"><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</a></li>
             <li><a href="/user-dashboard"><i class="fa-solid fa-chart-line"></i> Balance Inquiry</a></li>
@@ -80,37 +79,37 @@
                     <div class="card">
                         <div class="card-icon icon-blue"><i class="fa-solid fa-wallet"></i></div>
                         <p class="card-title">Total Balance</p>
-                        <h2 class="card-value">$24,500.00</h2>
+                        <h2 class="card-value">${{ number_format($totalBalance, 2) }}</h2>
                     </div>
+                    @if($accounts->count() > 0)
                     <div class="card">
                         <div class="card-icon icon-green"><i class="fa-solid fa-building-columns"></i></div>
-                        <p class="card-title">Account Number</p>
-                        <h2 class="card-value" style="font-size: 1.25rem;">ACC-10492</h2>
+                        <p class="card-title">Primary Account</p>
+                        <h2 class="card-value" style="font-size: 1.25rem;">{{ $accounts->first()->account_number }}</h2>
                     </div>
                     <div class="card">
                         <div class="card-icon icon-purple"><i class="fa-solid fa-piggy-bank"></i></div>
                         <p class="card-title">Account Type</p>
-                        <h2 class="card-value" style="font-size: 1.25rem;">Savings</h2>
+                        <h2 class="card-value" style="font-size: 1.25rem;">{{ $accounts->first()->account_type }}</h2>
                     </div>
+                    @else
+                    <div class="card" style="grid-column: span 2;">
+                        <p class="card-title">No Active Accounts</p>
+                        <h2 class="card-value" style="font-size: 1.25rem;">Please apply for an account.</h2>
+                    </div>
+                    @endif
                     <div class="card">
                         <div class="card-icon icon-orange"><i class="fa-solid fa-clock-rotate-left"></i></div>
                         <p class="card-title">Last Transaction</p>
-                        <h2 class="card-value" style="font-size: 1.25rem;">08 June 2026</h2>
+                        <h2 class="card-value" style="font-size: 1.25rem;">
+                            {{ $recentTransactions->first() ? \Carbon\Carbon::parse($recentTransactions->first()->created_at)->format('d M Y') : 'No Activity' }}
+                        </h2>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
                 <div class="quick-actions-section">
                     <h2>Quick Actions</h2>
                     <div class="quick-actions">
-                        <a href="/user-deposit" class="action-btn">
-                            <i class="fa-solid fa-plus-circle"></i>
-                            <span>Deposit Money</span>
-                        </a>
-                        <a href="/user-deposit" class="action-btn">
-                            <i class="fa-solid fa-minus-circle"></i>
-                            <span>Withdraw Money</span>
-                        </a>
                         <a href="/user-transfer" class="action-btn">
                             <i class="fa-solid fa-exchange-alt"></i>
                             <span>Transfer Funds</span>
@@ -149,30 +148,32 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($recentTransactions as $tx)
                             <tr>
-                                <td>08-06-2026</td>
-                                <td><span class="badge success">Deposit</span></td>
-                                <td class="amount credit">+ $5,000.00</td>
+                                <td>{{ \Carbon\Carbon::parse($tx->created_at)->format('d-m-Y') }}</td>
+                                <td>
+                                    @if($tx->transaction_type == 'DEPOSIT')
+                                        <span class="badge success">Deposit</span>
+                                    @elseif($tx->transaction_type == 'WITHDRAW')
+                                        <span class="badge pending">Withdrawal</span>
+                                    @elseif($tx->transaction_type == 'TRANSFER_OUT')
+                                        <span class="badge pending">Transfer Out</span>
+                                    @elseif($tx->transaction_type == 'TRANSFER_IN')
+                                        <span class="badge success">Transfer In</span>
+                                    @else
+                                        <span class="badge pending">{{ $tx->transaction_type }}</span>
+                                    @endif
+                                </td>
+                                <td class="amount {{ in_array($tx->transaction_type, ['WITHDRAW', 'TRANSFER_OUT']) ? 'debit' : 'credit' }}">
+                                    {{ in_array($tx->transaction_type, ['WITHDRAW', 'TRANSFER_OUT']) ? '-' : '+' }} ${{ number_format($tx->amount, 2) }}
+                                </td>
                                 <td><span class="badge success">Success</span></td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>07-06-2026</td>
-                                <td><span class="badge pending">Transfer</span></td>
-                                <td class="amount debit">- $2,000.00</td>
-                                <td><span class="badge success">Success</span></td>
+                                <td colspan="4" style="text-align: center;">No recent transactions.</td>
                             </tr>
-                            <tr>
-                                <td>05-06-2026</td>
-                                <td><span class="badge pending">Withdrawal</span></td>
-                                <td class="amount debit">- $500.00</td>
-                                <td><span class="badge success">Success</span></td>
-                            </tr>
-                            <tr>
-                                <td>01-06-2026</td>
-                                <td><span class="badge success">Salary</span></td>
-                                <td class="amount credit">+ $8,200.00</td>
-                                <td><span class="badge success">Success</span></td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -192,23 +193,27 @@
             <div class="right-col">
                 <!-- Profile Box -->
                 <div class="section-panel profile-box">
-                    <img src="https://i.pravatar.cc/150?img=12" alt="Mirza Mamun" class="user-avatar">
-                    <h3>Mirza Mamun <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 1rem;" title="KYC Verified"></i></h3>
-                    <p>mirza.mamun@example.com</p>
+                    @if($user->profile_photo)
+                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->first_name }}" class="user-avatar">
+                    @else
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name . ' ' . $user->last_name) }}&background=random" alt="{{ $user->first_name }}" class="user-avatar">
+                    @endif
+                    <h3>{{ $user->full_name }} <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 1rem;" title="Verified"></i></h3>
+                    <p>{{ $user->email }}</p>
                     
                     <div class="status-badges">
                         <span class="status-badge"><i class="fa-solid fa-shield-halved"></i> Active</span>
-                        <span class="status-badge"><i class="fa-solid fa-lock"></i> 2FA Enabled</span>
+                        <span class="status-badge"><i class="fa-solid fa-lock"></i> Secured</span>
                     </div>
 
                     <div class="profile-details">
                         <div class="detail-item">
                             <span>Phone</span>
-                            <span>+880 1711-223344</span>
+                            <span>{{ $user->phone ?? 'Not provided' }}</span>
                         </div>
                         <div class="detail-item">
                             <span>Joined</span>
-                            <span>Oct 2023</span>
+                            <span>{{ $user->created_at->format('M Y') }}</span>
                         </div>
                     </div>
                 </div>
@@ -220,27 +225,17 @@
                         <a href="#" class="view-all">Mark read</a>
                     </div>
                     <div class="notification-list">
-                        <div class="notification-item success">
-                            <div class="notif-icon success"><i class="fa-solid fa-arrow-down"></i></div>
+                        @forelse($notifications as $notif)
+                        <div class="notification-item {{ $notif->is_read ? '' : 'info' }}">
+                            <div class="notif-icon {{ $notif->is_read ? 'success' : 'info' }}"><i class="fa-solid fa-bell"></i></div>
                             <div class="notif-content">
-                                <p><strong>$5,000 deposited</strong> successfully to your savings account.</p>
-                                <span class="notif-time">2 hours ago</span>
+                                <p>{{ $notif->message }}</p>
+                                <span class="notif-time">{{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}</span>
                             </div>
                         </div>
-                        <div class="notification-item warning">
-                            <div class="notif-icon warning"><i class="fa-solid fa-money-bill-transfer"></i></div>
-                            <div class="notif-content">
-                                <p><strong>Fund transferred</strong> to Account Ending in 4512.</p>
-                                <span class="notif-time">Yesterday</span>
-                            </div>
-                        </div>
-                        <div class="notification-item info">
-                            <div class="notif-icon info"><i class="fa-solid fa-calendar-day"></i></div>
-                            <div class="notif-content">
-                                <p><strong>Loan installment</strong> due in 3 days. Please maintain sufficient balance.</p>
-                                <span class="notif-time">3 days ago</span>
-                            </div>
-                        </div>
+                        @empty
+                        <div style="padding: 1rem; text-align: center; color: var(--text-muted);">No new notifications</div>
+                        @endforelse
                     </div>
                 </div>
             </div>

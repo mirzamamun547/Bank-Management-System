@@ -1,0 +1,414 @@
+﻿<USER_REQUEST>
+i also have this  
+
+CREATE OR REPLACE FUNCTION FIND_ACTIVE_ACCOUNT(
+    p_account_number IN VARCHAR2
+) RETURN SYS_REFCURSOR
+IS
+    v_result SYS_REFCURSOR;
+BEGIN
+    OPEN v_result FOR
+        SELECT
+            a.id            AS account_id,
+            a.account_number,
+            a.balance,
+            a.user_id,
+            u.full_name,
+            u.nid
+        FROM accounts a
+        JOIN USERS u ON a.user_id = u.id
+        WHERE a.account_number = p_account_number
+        AND   a.status         = 'Active';
+
+    RETURN v_result;
+
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20001, 'FIND_ACTIVE_ACCOUNT Error: ' || SQLERRM);
+END;
+/
+
+
+
+
+CREATE OR REPLACE PROCEDURE APPROVE_ACCOUNT(
+    p_account_id     IN NUMBER,
+    p_pin            IN VARCHAR2,
+    p_performed_by   IN VARCHAR2
+)
+IS
+    v_account_type   accounts.account_type%TYPE;
+    v_account_number accounts.account_number%TYPE;
+    v_user_id        accounts.user_id%TYPE;
+    v_status         accounts.status%TYPE;
+BEGIN
+    SELECT account_type, account_number, user_id, status
+    INTO   v_account_type, v_account_number, v_user_id, v_status
+    FROM   accounts
+    WHERE  id = p_account_id;
+
+    
+    IF v_status != 'Pending' THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Account is not in Pending state.');
+    END IF;
+
+   
+    UPDATE accounts
+    SET    status     = 'Active',
+           updated_at = CURRENT_TIMESTAMP
+    WHERE  id = p_account_id;
+
+
+    INSERT INTO notifications (user_id, message, is_read, created_at, updated_at)
+    VALUES (
+        v_user_id,
+        'Your bank account request for ' || v_account_type ||
+        ' has been approved. Account No: ' || v_account_number ||
+        ', PIN: ' || p_pin,
+        0,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+   
+    INSERT INTO audit_log (table_name, action, performed_by, details, created_at, updated_at)
+    VALUES (
+        'accounts',
+        'APPROVE',
+        p_performed_by,
+        'Account ' || v_account_number || ' approved.',
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK; 
+        RAISE_APPLICATION_ERROR(-20003, 'APPROVE_ACCOUNT Error: ' || SQLERRM);
+END;
+/
+
+
+
+CREATE OR REPLACE PROCEDURE DO_DEPOSIT(
+    p_account_number IN VARCHAR2,
+    p_amount         IN NUMBER,
+    p_performed_by   IN VARCHAR2
+)
+IS
+    v_account_id  accounts.id%TYPE;
+    v_user_id     accounts.user_id%TYPE;
+    v_new_balance accounts.balance%TYPE;
+BEGIN
+    
+    SELECT a.id, a.user_id
+    INTO   v_account_id, v_user_id
+    FROM   accounts a
+    WHERE  a.account_number = p_account_number
+    AND    a.status         = 'Active';
+
+  
+    UPDATE accounts
+    SET    balance    = balance + p_amount,
+           updated_at = CURRENT_TIMESTAMP
+    WHERE  account_number = p_account_number;
+
+  
+    SELECT balance INTO v_new_balance
+    FROM   accounts
+    WHERE  account_number = p_account_number;
+
+  
+    INSERT INTO transactions (account_id, transaction_type, amount, description, created_at, updated_at)
+    VALUES (
+        v_account_id,
+        'DEPOSIT',
+        p_amount,
+        'Cash deposit processed by bank employee.',
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+   
+    INSERT INTO notifications (user_id, message, is_read, created_at, updated_at)
+    VALUES (
+        v_user_id,
+        'Deposit Successful! Amount: $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' | New Balance: $' || TO_CHAR(v_new_balance, 'FM999999990.00'),
+        0,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    INSERT INTO audit_log (table_name, action, performed_by, details, created_at, updated_at)
+    VALUES (
+        'accounts',
+        'DEPOSIT',
+        p_performed_by,
+        'Deposited $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' to account ' || p_account_number,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    COMMIT;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20004, 'Account not found or inactive: ' || p_account_number);
+    WHEN OTHERS THEN
+        ROLLBACK; -- à¦•à§‹à¦¨à§‹ error à¦¹à¦²à§‡ à¦¸à¦¬ undo à¦•à¦°à§‹
+        RAISE_APPLICATION_ERROR(-20005, 'DO_DEPOSIT Error: ' || SQLERRM);
+END;
+/
+
+
+
+CREATE OR REPLACE PROCEDURE DO_WITHDRAW(
+    p_account_number IN VARCHAR2,
+    p_amount         IN NUMBER,
+    p_performed_by   IN VARCHAR2
+)
+IS
+    v_account_id      accounts.id%TYPE;
+    v_user_id         accounts.user_id%TYPE;
+    v_current_balance accounts.balance%TYPE;
+    v_new_balance     accounts.balance%TYPE;
+BEGIN
+    
+    SELECT a.id, a.user_id, a.balance
+    INTO   v_account_id, v_user_id, v_current_balance
+    FROM   accounts a
+    WHERE  a.account_number = p_account_number
+    AND    a.status         = 'Active';
+
+
+    IF v_current_balance < p_amount THEN
+        RAISE_APPLICATION_ERROR(-20006,
+            'Insufficient balance. Available: $' ||
+            TO_CHAR(v_current_balance, 'FM999999990.00'));
+    END IF;
+
+   
+    UPDATE accounts
+    SET    balance    = balance - p_amount,
+           updated_at = CURRENT_TIMESTAMP
+    WHERE  account_number = p_account_number;
+
+  
+    SELECT balance INTO v_new_balance
+    FROM   accounts
+    WHERE  account_number = p_account_number;
+
+   
+    INSERT INTO transactions (account_id, transaction_type, amount, description, created_at, updated_at)
+    VALUES (
+        v_account_id,
+        'WITHDRAW',
+        p_amount,
+        'Cash withdrawal processed by bank employee.',
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    
+    INSERT INTO notifications (user_id, message, is_read, created_at, updated_at)
+    VALUES (
+        v_user_id,
+        'Withdrawal Successful! Amount: $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' | New Balance: $' || TO_CHAR(v_new_balance, 'FM999999990.00'),
+        0,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+   
+    INSERT INTO audit_log (table_name, action, performed_by, details, created_at, updated_at)
+    VALUES (
+        'accounts',
+        'WITHDRAW',
+        p_performed_by,
+        'Withdrew $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' from account ' || p_account_number,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    COMMIT; 
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20007, 'Account not found or inactive: ' || p_account_number);
+    WHEN OTHERS THEN
+        ROLLBACK; -- undo jodi error 
+        RAISE_APPLICATION_ERROR(-20008, 'DO_WITHDRAW Error: ' || SQLERRM);
+END;
+/
+
+
+
+
+CREATE OR REPLACE PROCEDURE DO_TRANSFER(
+    p_from_account IN VARCHAR2,
+    p_to_account   IN VARCHAR2,
+    p_amount       IN NUMBER,
+    p_performed_by IN VARCHAR2
+)
+IS
+    v_from_account_id  accounts.id%TYPE;
+    v_from_user_id     accounts.user_id%TYPE;
+    v_from_balance     accounts.balance%TYPE;
+    v_from_new_balance accounts.balance%TYPE;
+
+    v_to_account_id    accounts.id%TYPE;
+    v_to_user_id       accounts.user_id%TYPE;
+    v_to_new_balance   accounts.balance%TYPE;
+BEGIN
+    
+    SELECT a.id, a.user_id, a.balance
+    INTO   v_from_account_id, v_from_user_id, v_from_balance
+    FROM   accounts a
+    WHERE  a.account_number = p_from_account
+    AND    a.status         = 'Active';
+
+  
+    SELECT a.id, a.user_id
+    INTO   v_to_account_id, v_to_user_id
+    FROM   accounts a
+    WHERE  a.account_number = p_to_account
+    AND    a.status         = 'Active';
+
+   
+    IF p_from_account = p_to_account THEN
+        RAISE_APPLICATION_ERROR(-20009, 'Cannot transfer to the same account.');
+    END IF;
+
+  
+    IF v_from_balance < p_amount THEN
+        RAISE_APPLICATION_ERROR(-20010,
+            'Insufficient balance. Available: $' ||
+            TO_CHAR(v_from_balance, 'FM999999990.00'));
+    END IF;
+
+   
+    UPDATE accounts
+    SET    balance    = balance - p_amount,
+           updated_at = CURRENT_TIMESTAMP
+    WHERE  account_number = p_from_account;
+
+    
+    UPDATE accounts
+    SET    balance    = balance + p_amount,
+           updated_at = CURRENT_TIMESTAMP
+    WHERE  account_number = p_to_account;
+
+  
+    SELECT balance INTO v_from_new_balance
+    FROM   accounts WHERE account_number = p_from_account;
+
+    SELECT balance INTO v_to_new_balance
+    FROM   accounts WHERE account_number = p_to_account;
+
+    INSERT INTO transactions (account_id, transaction_type, amount, reference, description, created_at, updated_at)
+    VALUES (
+        v_from_account_id,
+        'TRANSFER_OUT',
+        p_amount,
+        p_to_account,
+        'Transfer to account ' || p_to_account,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    INSERT INTO transactions (account_id, transaction_type, amount, reference, description, created_at, updated_at)
+    VALUES (
+        v_to_account_id,
+        'TRANSFER_IN',
+        p_amount,
+        p_from_account,
+        'Transfer received from account ' || p_from_account,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+
+    INSERT INTO notifications (user_id, message, is_read, created_at, updated_at)
+    VALUES (
+        v_from_user_id,
+        'Transfer Successful! Sent: $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' to ' || p_to_account ||
+        ' | New Balance: $' || TO_CHAR(v_from_new_balance, 'FM999999990.00'),
+        0,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    INSERT INTO notifications (user_id, message, is_read, created_at, updated_at)
+    VALUES (
+        v_to_user_id,
+        'Money Received! Amount: $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' from ' || p_from_account ||
+        ' | New Balance: $' || TO_CHAR(v_to_new_balance, 'FM999999990.00'),
+        0,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    
+    INSERT INTO audit_log (table_name, action, performed_by, details, created_at, updated_at)
+    VALUES (
+        'accounts',
+        'TRANSFER',
+        p_performed_by,
+        'Transferred $' || TO_CHAR(p_amount, 'FM999999990.00') ||
+        ' from ' || p_from_account || ' to ' || p_to_account,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    );
+
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20011, 'One or both accounts not found or inactive.');
+    WHEN OTHERS THEN
+        ROLLBACK; 
+        RAISE_APPLICATION_ERROR(-20012, 'DO_TRANSFER Error: ' || SQLERRM);
+END;
+/
+
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('ALL OKKK');
+    DBMS_OUTPUT.PUT_LINE('FUNCTION  : FIND_ACTIVE_ACCOUNT');
+    DBMS_OUTPUT.PUT_LINE('PROCEDURE : APPROVE_ACCOUNT');
+    DBMS_OUTPUT.PUT_LINE('PROCEDURE : DO_DEPOSIT');
+    DBMS_OUTPUT.PUT_LINE('PROCEDURE : DO_WITHDRAW');
+    DBMS_OUTPUT.PUT_LINE('PROCEDURE : DO_TRANSFER');
+END;
+/
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-07-03T16:53:01+06:00.
+
+The user's current state is as follows:
+Active Document: c:\Users\Mirza Mamun\OneDrive\Desktop\bank\sql\schema.sql (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 49
+Other open documents:
+- c:\Users\Mirza Mamun\OneDrive\Desktop\bank\.env (LANGUAGE_UNSPECIFIED)
+- c:\Users\Mirza Mamun\OneDrive\Desktop\bank\routes\web.php (LANGUAGE_PHP)
+- c:\Users\Mirza Mamun\OneDrive\Desktop\bank\app\Http\Controllers\AuthController.php (LANGUAGE_PHP)
+- c:\Users\Mirza Mamun\OneDrive\Desktop\bank\resources\views\user\notifications.blade.php (LANGUAGE_BLADE)
+- c:\Users\Mirza Mamun\OneDrive\Desktop\bank\resources\views\user\profile.blade.php (LANGUAGE_BLADE)
+Browser State:
+  Page BED300FD518628523011A0956619F0A3 (CareerForge - Shape Your Future) - http://127.0.0.1:8000/ [ACTIVE]
+    Viewport: 1536x730, Page Height: 1799
+Running terminal commands:
+- php artisan serve (in c:\Users\Mirza Mamun\OneDrive\Desktop\bank, running for 12m5s)
+</ADDITIONAL_METADATA>

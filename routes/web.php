@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 
 Route::get('/', function () {
     return view('index');
@@ -16,7 +18,6 @@ Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Dashboard routes
-use App\Http\Controllers\AdminController;
 
 Route::get('/dashboard', [AdminController::class, 'dashboard'])->middleware('auth')->name('admin.dashboard');
 Route::post('/admin/approve-account/{id}', [AdminController::class, 'approveAccount'])->middleware('auth')->name('admin.approveAccount');
@@ -36,14 +37,11 @@ Route::post('/admin/transfer/search', [AdminController::class, 'transferSearch']
 Route::post('/admin/transfer/otp',    [AdminController::class, 'transferGenerateOtp'])->middleware('auth')->name('admin.transfer.otp');
 Route::post('/admin/transfer/verify', [AdminController::class, 'transferVerifyOtp'])->middleware('auth')->name('admin.transfer.verify');
 
-Route::get('/user-dashboard', function () { return view('user.dashboard'); })->middleware('auth');
-
-use App\Http\Controllers\UserController;
+Route::get('/user-dashboard', [UserController::class, 'dashboard'])->middleware('auth')->name('user.dashboard');
 
 // User section pages
 Route::get('/user-accounts', [UserController::class, 'indexAccounts'])->middleware('auth')->name('user.accounts');
 Route::post('/user-accounts', [UserController::class, 'storeAccount'])->middleware('auth');
-Route::get('/user-deposit', function () { return view('user.deposit'); })->middleware('auth');
 Route::get('/user-loan', function () { return view('user.loan'); })->middleware('auth');
 
 Route::get('/user-profile', [UserController::class, 'showProfile'])->middleware('auth');
@@ -51,8 +49,9 @@ Route::post('/user-profile/update', [UserController::class, 'updateProfile'])->m
 Route::post('/user-profile/password', [UserController::class, 'updatePassword'])->middleware('auth');
 Route::get('/user-notifications', [UserController::class, 'notifications'])->middleware('auth')->name('user.notifications');
 
-Route::get('/user-transactions', function () { return view('user.transactions'); })->middleware('auth');
-Route::get('/user-transfer', function () { return view('user.transfer'); })->middleware('auth');
+Route::get('/user-transactions', [UserController::class, 'indexTransactions'])->middleware('auth')->name('user.transactions');
+Route::get('/user-transfer', [UserController::class, 'indexTransfer'])->middleware('auth')->name('user.transfer');
+Route::post('/user-transfer', [UserController::class, 'storeTransfer'])->middleware('auth')->name('user.transfer.store');
 Route::get('/customer/edit/{id}', [AdminController::class, 'editCustomer'])
     ->name('customer.edit');
 
