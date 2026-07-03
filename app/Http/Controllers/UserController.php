@@ -241,4 +241,85 @@ class UserController extends Controller
 
         return view('user.transactions', compact('transactions'));
     }
+
+    public function indexLoans()
+    {
+        $user = Auth::user();
+        $loans = $user->loans()->orderBy('created_at', 'desc')->get();
+        $accounts = $user->accounts()->where('status', 'Active')->get();
+        
+        return view('user.loan', compact('loans', 'accounts'));
+    }
+
+    public function applyLoan(Request $request)
+    {
+        $request->validate([
+            'loan_type' => 'required|string',
+            'amount' => 'required|numeric|min:500',
+            'duration_months' => 'required|integer|min:6',
+            'purpose' => 'nullable|string'
+        ]);
+
+        $user = Auth::user();
+
+        try {
+            $pdo = \Illuminate\Support\Facades\DB::getPdo();
+            $stmt = $pdo->prepare("BEGIN APPLY_LOAN(:user_id, :loan_type, :amount, :duration_months, :purpose); END;");
+            $stmt->execute([
+                'user_id' => $user->id,
+                'loan_type' => $request->loan_type,
+                'amount' => $request->amount,
+                'duration_months' => $request->duration_months,
+                'purpose' => $request->purpose
+            ]);
+
+            return back()->with('success', 'Loan application submitted successfully.');
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            if (preg_match('/ORA-\d+: (.*)/', $errorMsg, $matches)) {
+                $errorMsg = $matches[1];
+            }
+            return back()->with('error', 'Loan application failed: ' . $errorMsg);
+        }
+    }
+
+    public function payLoanEmi(Request $request)
+    {
+        $request->validate([
+            'loan_id' => 'required|exists:loans,id',
+            'account_id' => 'required|exists:accounts,id'
+        ]);
+
+        $user = Auth::user();
+        
+        // Ensure account belongs to user and is active
+        $account = $user->accounts()->where('id', $request->account_id)->where('status', 'Active')->first();
+        if (!$account) {
+            return back()->with('error', 'Invalid or inactive account selected.');
+        }
+
+        // Fetch loan
+        $loan = $user->loans()->where('id', $request->loan_id)->first();
+        if (!$loan || $loan->status !== 'Active') {
+            return back()->with('error', 'Invalid loan or loan is not active.');
+        }
+
+        try {
+            $pdo = \Illuminate\Support\Facades\DB::getPdo();
+            $stmt = $pdo->prepare("BEGIN PAY_LOAN_EMI(:loan_id, :account_id, :emi_amount); END;");
+            $stmt->execute([
+                'loan_id' => $loan->id,
+                'account_id' => $account->id,
+                'emi_amount' => $loan->monthly_installment
+            ]);
+
+            return back()->with('success', 'EMI payment processed successfully.');
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            if (preg_match('/ORA-\d+: (.*)/', $errorMsg, $matches)) {
+                $errorMsg = $matches[1];
+            }
+            return back()->with('error', 'EMI payment failed: ' . $errorMsg);
+        }
+    }
 }

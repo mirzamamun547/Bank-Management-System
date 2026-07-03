@@ -21,6 +21,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/dashboard', [AdminController::class, 'dashboard'])->middleware('auth')->name('admin.dashboard');
 Route::post('/admin/approve-account/{id}', [AdminController::class, 'approveAccount'])->middleware('auth')->name('admin.approveAccount');
+Route::post('/admin/approve-loan/{id}', [AdminController::class, 'approveLoan'])->middleware('auth')->name('admin.approveLoan');
 
 // Deposit routes
 Route::post('/admin/deposit/search',  [AdminController::class, 'depositSearch'])->middleware('auth')->name('admin.deposit.search');
@@ -42,7 +43,9 @@ Route::get('/user-dashboard', [UserController::class, 'dashboard'])->middleware(
 // User section pages
 Route::get('/user-accounts', [UserController::class, 'indexAccounts'])->middleware('auth')->name('user.accounts');
 Route::post('/user-accounts', [UserController::class, 'storeAccount'])->middleware('auth');
-Route::get('/user-loan', function () { return view('user.loan'); })->middleware('auth');
+Route::get('/user-loan', [UserController::class, 'indexLoans'])->middleware('auth')->name('user.loan');
+Route::post('/user-loan/apply', [UserController::class, 'applyLoan'])->middleware('auth')->name('user.loan.apply');
+Route::post('/user-loan/pay', [UserController::class, 'payLoanEmi'])->middleware('auth')->name('user.loan.pay');
 
 Route::get('/user-profile', [UserController::class, 'showProfile'])->middleware('auth');
 Route::post('/user-profile/update', [UserController::class, 'updateProfile'])->middleware('auth');

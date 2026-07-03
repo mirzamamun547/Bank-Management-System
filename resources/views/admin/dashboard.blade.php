@@ -292,36 +292,87 @@
             <div class="section-header flex-between">
                 <div>
                     <h1>Loans & Payments</h1>
-                    <p>Manage customer loans and track payments.</p>
+                    <p>Review, approve, or reject customer loan applications.</p>
                 </div>
-                <button class="btn primary-btn" onclick="openModal('loanModal')"><i class="fa-solid fa-plus"></i> Issue Loan</button>
             </div>
-            
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Loan No</th>
-                            <th>Cust ID</th>
-                            <th>Principal Amount</th>
-                            <th>Last Payment No</th>
-                            <th>Payment Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>L-5001</td>
-                            <td>C-1003</td>
-                            <td class="amount">$50,000.00</td>
-                            <td>P-901</td>
-                            <td>2023-10-15</td>
-                            <td>
-                                <button class="btn small-btn outline">Record Payment</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            @if(session('success'))
+                <div class="alert-box success-alert">
+                    <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert-box error-alert">
+                    <i class="fa-solid fa-circle-xmark"></i> {{ session('error') }}
+                </div>
+            @endif
+
+            <div style="margin-bottom: 30px;">
+                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">
+                    <i class="fa-solid fa-clock" style="margin-right: 6px;"></i>Pending Loan Applications ({{ $pendingLoans->count() }})
+                </h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Customer</th>
+                                <th>Loan Type</th>
+                                <th>Amount</th>
+                                <th>Duration</th>
+                                <th>Purpose</th>
+                                <th>Eligibility</th>
+                                <th>Applied On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($pendingLoans as $loan)
+                            <tr>
+                                <td>LN-{{ $loan->loan_id }}</td>
+                                <td>
+                                    <div>
+                                        <strong>{{ $loan->full_name }}</strong>
+                                        <br><small style="color: var(--text-muted);">{{ $loan->email }}</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge info">{{ $loan->loan_type }}</span></td>
+                                <td class="amount">${{ number_format($loan->amount, 2) }}</td>
+                                <td>{{ $loan->duration_months }} months</td>
+                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $loan->purpose }}">{{ $loan->purpose ?? 'N/A' }}</td>
+                                <td>
+                                    @if(str_starts_with($loan->eligibility ?? '', 'ELIGIBLE'))
+                                        <span class="badge success"><i class="fa-solid fa-circle-check"></i> Eligible</span>
+                                    @else
+                                        <span class="badge warning" title="{{ $loan->eligibility }}"><i class="fa-solid fa-triangle-exclamation"></i> Not Eligible</span>
+                                    @endif
+                                </td>
+                                <td>{{ \Carbon\Carbon::parse($loan->created_at)->format('d M Y') }}</td>
+                                <td>
+                                    <div style="display: flex; gap: 6px;">
+                                        <form action="{{ route('admin.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="action" value="APPROVE">
+                                            <button type="submit" class="btn primary-btn small-btn" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;" onclick="return confirm('Approve this loan for ${{ number_format($loan->amount, 2) }}?')">
+                                                <i class="fa-solid fa-check"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="action" value="REJECT">
+                                            <button type="submit" class="btn outline small-btn" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);" onclick="return confirm('Reject this loan application?')">
+                                                <i class="fa-solid fa-xmark"></i> Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="9" style="text-align: center; padding: 20px;">No pending loan applications</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -715,6 +766,33 @@
                 document.getElementById('transfer-section').classList.add('active');
             });
         </script>
+        @endif
+
+        @if(session('success') || session('error'))
+        @php
+            $msg = session('success') ?? session('error') ?? '';
+            $isLoanMsg = str_contains(strtolower($msg), 'loan');
+            $isAccountMsg = str_contains(strtolower($msg), 'account');
+        @endphp
+        @if($isLoanMsg)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                document.querySelector('[data-target="loans-section"]').classList.add('active');
+                document.getElementById('loans-section').classList.add('active');
+            });
+        </script>
+        @elseif($isAccountMsg)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                document.querySelector('[data-target="accounts-section"]').classList.add('active');
+                document.getElementById('accounts-section').classList.add('active');
+            });
+        </script>
+        @endif
         @endif
 
     </main>

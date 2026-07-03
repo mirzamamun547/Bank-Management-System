@@ -78,27 +78,48 @@
 
             <!-- Loan Dashboard Cards -->
             <div class="summary-cards" style="margin-bottom: 32px;">
+                @php
+                    $activeLoans = $loans->where('status', 'Active');
+                    $totalLoanAmount = $activeLoans->sum('amount');
+                    $remainingAmount = $activeLoans->sum('remaining_amount');
+                    $monthlyInstallment = $activeLoans->sum('monthly_installment');
+                    $nextDueDate = $activeLoans->min('next_due_date');
+                @endphp
                 <div class="card">
                     <div class="card-icon icon-blue"><i class="fa-solid fa-hand-holding-dollar"></i></div>
                     <p class="card-title">Total Loan Amount</p>
-                    <h2 class="card-value">$50,000.00</h2>
+                    <h2 class="card-value">${{ number_format($totalLoanAmount, 2) }}</h2>
                 </div>
                 <div class="card">
                     <div class="card-icon icon-orange"><i class="fa-solid fa-sack-dollar"></i></div>
                     <p class="card-title">Remaining Amount</p>
-                    <h2 class="card-value">$12,500.00</h2>
+                    <h2 class="card-value">${{ number_format($remainingAmount, 2) }}</h2>
                 </div>
                 <div class="card">
                     <div class="card-icon icon-purple"><i class="fa-solid fa-calendar-check"></i></div>
                     <p class="card-title">Monthly Installment</p>
-                    <h2 class="card-value">$450.00</h2>
+                    <h2 class="card-value">${{ number_format($monthlyInstallment, 2) }}</h2>
                 </div>
                 <div class="card">
                     <div class="card-icon icon-green"><i class="fa-solid fa-stopwatch"></i></div>
                     <p class="card-title">Next Due Date</p>
-                    <h2 class="card-value" style="font-size: 1.25rem;">15 June 2026</h2>
+                    <h2 class="card-value" style="font-size: 1.25rem;">
+                        {{ $nextDueDate ? \Carbon\Carbon::parse($nextDueDate)->format('d M Y') : 'N/A' }}
+                    </h2>
                 </div>
             </div>
+
+            @if(session('success'))
+                <div class="alert success" style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: rgba(46, 204, 113, 0.1); border: 1px solid var(--success); color: var(--success);">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert error" style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: rgba(231, 76, 60, 0.1); border: 1px solid var(--danger); color: var(--danger);">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
                 
@@ -108,35 +129,36 @@
                         <div class="panel-header">
                             <h3><i class="fa-solid fa-file-signature" style="color: var(--accent); margin-right: 8px;"></i> Apply for a Loan</h3>
                         </div>
-                        <form>
+                        <form action="{{ route('user.loan.apply') }}" method="POST">
+                            @csrf
                             <div class="form-group">
                                 <label>Loan Type</label>
-                                <select class="form-control">
-                                    <option>Personal Loan</option>
-                                    <option>Home Loan</option>
-                                    <option>Car Loan</option>
-                                    <option>Education Loan</option>
+                                <select name="loan_type" class="form-control" required>
+                                    <option value="Personal Loan">Personal Loan</option>
+                                    <option value="Home Loan">Home Loan</option>
+                                    <option value="Car Loan">Car Loan</option>
+                                    <option value="Education Loan">Education Loan</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Amount Needed ($)</label>
-                                <input type="number" class="form-control" placeholder="0.00">
+                                <input type="number" name="amount" class="form-control" placeholder="0.00" min="500" required>
                             </div>
                             <div class="form-group">
                                 <label>Duration (Months)</label>
-                                <select class="form-control">
-                                    <option>12 Months</option>
-                                    <option>24 Months</option>
-                                    <option>36 Months</option>
-                                    <option>48 Months</option>
-                                    <option>60 Months</option>
+                                <select name="duration_months" class="form-control" required>
+                                    <option value="12">12 Months</option>
+                                    <option value="24">24 Months</option>
+                                    <option value="36">36 Months</option>
+                                    <option value="48">48 Months</option>
+                                    <option value="60">60 Months</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Purpose of Loan</label>
-                                <textarea class="form-control" rows="3" placeholder="Briefly explain the reason for the loan"></textarea>
+                                <textarea name="purpose" class="form-control" rows="3" placeholder="Briefly explain the reason for the loan"></textarea>
                             </div>
-                            <button type="button" class="btn-accent" style="margin-top: 16px;">
+                            <button type="submit" class="btn-accent" style="margin-top: 16px;">
                                 Apply for Loan
                             </button>
                         </form>
@@ -159,24 +181,46 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse($loans as $loan)
                                 <tr>
-                                    <td>LN-88210</td>
-                                    <td class="amount">$50,000.00</td>
-                                    <td><span class="badge success">Active</span></td>
-                                    <td><button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Pay EMI</button></td>
+                                    <td>LN-{{ $loan->id }}</td>
+                                    <td class="amount">${{ number_format($loan->amount, 2) }}</td>
+                                    <td>
+                                        @if($loan->status == 'Active')
+                                            <span class="badge success">Active</span>
+                                        @elseif($loan->status == 'Pending')
+                                            <span class="badge pending">Pending</span>
+                                        @elseif($loan->status == 'Closed')
+                                            <span class="badge" style="background-color: var(--text-muted); color: white;">Closed</span>
+                                        @else
+                                            <span class="badge pending">{{ $loan->status }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($loan->status == 'Active')
+                                            <form action="{{ route('user.loan.pay') }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="loan_id" value="{{ $loan->id }}">
+                                                <select name="account_id" style="padding: 4px; border-radius: 4px; font-size: 0.8rem; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);" required>
+                                                    <option value="" disabled selected>Select Account</option>
+                                                    @foreach($accounts as $acc)
+                                                        <option value="{{ $acc->id }}">{{ $acc->account_number }} (${{ $acc->balance }})</option>
+                                                    @endforeach
+                                                </select>
+                                                <button type="submit" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; margin-top: 4px;">Pay EMI (${{ number_format($loan->monthly_installment, 2) }})</button>
+                                            </form>
+                                        @elseif($loan->status == 'Pending')
+                                            <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" disabled>Reviewing</button>
+                                        @else
+                                            <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Statement</button>
+                                        @endif
+                                    </td>
                                 </tr>
+                                @empty
                                 <tr>
-                                    <td>LN-99341</td>
-                                    <td class="amount">$15,000.00</td>
-                                    <td><span class="badge pending">Pending</span></td>
-                                    <td><button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" disabled>Reviewing</button></td>
+                                    <td colspan="4" style="text-align: center;">No loans found.</td>
                                 </tr>
-                                <tr>
-                                    <td>LN-44120</td>
-                                    <td class="amount">$5,000.00</td>
-                                    <td><span class="badge" style="background-color: var(--text-muted); color: white;">Closed</span></td>
-                                    <td><button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Statement</button></td>
-                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

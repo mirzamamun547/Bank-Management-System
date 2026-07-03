@@ -18,8 +18,20 @@ class AdminController extends Controller
             ->where('role', 'CUSTOMER')
             ->orderBy('customer_id')
             ->get();
+            
+        $pendingLoans = DB::table('PENDING_LOANS')->get();
+        
+        // Enhance pending loans with eligibility check
+        $pdo = DB::getPdo();
+        foreach ($pendingLoans as $loan) {
+            $stmt = $pdo->prepare("BEGIN :result := CHECK_LOAN_ELIGIBILITY(:user_id); END;");
+            $stmt->bindParam(':user_id', $loan->user_id);
+            $stmt->bindParam(':result', $eligibility, \PDO::PARAM_STR, 255);
+            $stmt->execute();
+            $loan->eligibility = $eligibility;
+        }
 
-        return view('admin.dashboard', compact('pendingAccounts', 'activeAccounts', 'customers'));
+        return view('admin.dashboard', compact('pendingAccounts', 'activeAccounts', 'customers', 'pendingLoans'));
     }
 
     public function editCustomer($id)
@@ -86,6 +98,35 @@ class AdminController extends Controller
         }
 
         return back()->with('success', 'Account approved successfully. Notification sent to customer.');
+    }
+
+    public function approveLoan(Request $request, $id)
+    {
+        $request->validate([
+            'action' => 'required|in:APPROVE,REJECT'
+        ]);
+
+        $loanId      = (int) $id;
+        $action      = $request->input('action');
+        $performedBy = auth()->user()->full_name ?? 'Employee';
+
+        try {
+            $pdo  = DB::getPdo();
+            $stmt = $pdo->prepare("BEGIN APPROVE_LOAN(:loan_id, :action, :performed_by); END;");
+            $stmt->bindParam(':loan_id', $loanId);
+            $stmt->bindParam(':action', $action);
+            $stmt->bindParam(':performed_by', $performedBy);
+            $stmt->execute();
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            if (preg_match('/ORA-\d+: (.*)/', $errorMsg, $matches)) {
+                $errorMsg = $matches[1];
+            }
+            return back()->with('error', 'Loan action failed: ' . $errorMsg);
+        }
+
+        $statusStr = $action === 'APPROVE' ? 'approved' : 'rejected';
+        return back()->with('success', 'Loan ' . $statusStr . ' successfully.');
     }
 
    

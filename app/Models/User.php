@@ -70,4 +70,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Account::class, 'user_id', 'id');
     }
+
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }
 }
