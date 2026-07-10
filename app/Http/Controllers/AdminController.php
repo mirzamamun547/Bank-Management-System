@@ -100,7 +100,7 @@ class AdminController extends Controller
             // Call Oracle PL/SQL package procedure to add employee
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.ADD_EMPLOYEE(
+                    ADD_EMPLOYEE(
                         :first_name,
                         :last_name,
                         :email,
@@ -142,7 +142,7 @@ class AdminController extends Controller
         try {
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.UPDATE_EMPLOYEE(
+                    UPDATE_EMPLOYEE(
                         :emp_id,
                         :first_name,
                         :last_name,
@@ -228,7 +228,7 @@ class AdminController extends Controller
         try {
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.APPROVE_LOAN(:loan_id);
+                    APPROVE_LOAN(:loan_id);
                 END;
             ", ['loan_id' => $id]);
 
@@ -243,7 +243,7 @@ class AdminController extends Controller
         try {
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.REJECT_LOAN(:loan_id);
+                    REJECT_LOAN(:loan_id);
                 END;
             ", ['loan_id' => $id]);
 

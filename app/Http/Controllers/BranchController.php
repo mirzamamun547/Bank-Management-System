@@ -42,7 +42,7 @@ class BranchController extends Controller
         try {
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.ADD_BRANCH(
+                    ADD_BRANCH(
                         :branch_name,
                         :location,
                         :manager_employee_id
@@ -75,7 +75,7 @@ class BranchController extends Controller
         try {
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.UPDATE_BRANCH(
+                    UPDATE_BRANCH(
                         :branch_id,
                         :branch_name,
                         :location,
@@ -105,7 +105,7 @@ class BranchController extends Controller
         try {
             DB::statement("
                 BEGIN
-                    BANK_ADMIN_PKG.DELETE_BRANCH(:branch_id);
+                    DELETE_BRANCH(:branch_id);
                 END;
             ", ['branch_id' => $id]);
 
