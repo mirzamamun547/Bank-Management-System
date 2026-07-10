@@ -25,8 +25,6 @@
         /* Main Area */
         .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .admin-header { background: #ffffff; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .admin-header .search-box { background: #f4f7fe; border-radius: 20px; padding: 8px 16px; display: flex; align-items: center; gap: 10px; width: 300px; }
-        .admin-header .search-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.9rem; }
         .admin-header-right { display: flex; align-items: center; gap: 20px; }
         .admin-profile { display: flex; align-items: center; gap: 10px; }
         .admin-profile img { width: 40px; height: 40px; border-radius: 50%; }
@@ -38,21 +36,21 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Dashboard Cards & Charts */
-        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; margin-bottom: 30px; }
-        .admin-stat-card { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 15px; }
-        .admin-stat-card .icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 30px; }
+        .admin-stat-card { background: #ffffff; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 12px; }
+        .admin-stat-card .icon { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
         .admin-stat-card .icon.blue { background: #e8f0fe; color: #4318ff; }
         .admin-stat-card .icon.green { background: #e6faf0; color: #059669; }
         .admin-stat-card .icon.purple { background: #f3e8ff; color: #8b5cf6; }
         .admin-stat-card .icon.orange { background: #fef3c7; color: #d97706; }
         .admin-stat-card .icon.red { background: #fee2e2; color: #ef4444; }
-        .admin-stat-card .info p { font-size: 0.85rem; color: #a3aed1; margin-bottom: 5px; margin-top:0;}
-        .admin-stat-card .info h3 { font-size: 1.3rem; color: #2b3674; margin:0;}
-        .charts-row-1 { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 20px; margin-bottom: 30px; }
-        .charts-row-2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .admin-stat-card .info p { font-size: 0.8rem; color: #a3aed1; margin-bottom: 3px; margin-top:0;}
+        .admin-stat-card .info h3 { font-size: 1.15rem; color: #2b3674; margin:0;}
+        
+        .charts-row-1 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
         .chart-card { background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .chart-card h3 { font-size: 1.1rem; color: #2b3674; margin-top:0; margin-bottom: 20px; }
-        .chart-container { position: relative; height: 250px; width: 100%; }
+        .chart-container { position: relative; height: 280px; width: 100%; }
 
         /* Tables & Lists */
         .table-container { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 30px; }
@@ -64,13 +62,16 @@
         .data-table td { font-size: 0.95rem; color: #2b3674; font-weight: 500; }
         .data-table tbody tr:hover { background: #f8fafc; }
         
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
         .badge-success { background: #dcfce7; color: #166534; }
         .badge-warning { background: #fef9c3; color: #854d0e; }
         .badge-danger { background: #fee2e2; color: #991b1b; }
         .badge-info { background: #e0f2fe; color: #075985; }
         
-        .btn-primary { background: #4318ff; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #4318ff; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: inherit; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; }
+        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         
         /* Reports Grid */
         .reports-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -82,6 +83,9 @@
     </style>
 </head>
 <body>
+    @php
+        $currentSection = $section ?? 'dashboard';
+    @endphp
     <div class="admin-layout">
         <!-- Sidebar -->
         <nav class="dark-sidebar">
@@ -90,25 +94,22 @@
                 <h2>Nexus Bank</h2>
             </div>
             <ul class="nav-links">
-                <li class="active" data-target="dashboard-section"><i class="fa-solid fa-chart-pie"></i> Dashboard</li>
+                <li class="{{ $currentSection === 'dashboard' ? 'active' : '' }}" data-target="dashboard-section"><i class="fa-solid fa-chart-pie"></i> Dashboard</li>
                 
                 <div class="nav-section">Management</div>
-                <li data-target="customers-section"><i class="fa-solid fa-users"></i> Customers</li>
-                <li data-target="employees-section"><i class="fa-solid fa-user-tie"></i> Employees</li>
-                <li data-target="accounts-section"><i class="fa-solid fa-wallet"></i> Accounts</li>
-                <li data-target="loans-section"><i class="fa-solid fa-hand-holding-dollar"></i> Loans</li>
-                <li data-target="transactions-section"><i class="fa-solid fa-right-left"></i> Transactions</li>
-                <li data-target="transfers-section"><i class="fa-solid fa-money-bill-transfer"></i> Transfers</li>
-                <li data-target="branches-section"><i class="fa-solid fa-code-branch"></i> Branches</li>
+                <li class="{{ $currentSection === 'customers' ? 'active' : '' }}" data-target="customers-section"><i class="fa-solid fa-users"></i> Customers</li>
+                <li class="{{ $currentSection === 'employees' ? 'active' : '' }}" data-target="employees-section"><i class="fa-solid fa-user-tie"></i> Employees</li>
+                <li class="{{ $currentSection === 'branches' ? 'active' : '' }}" data-target="branches-section"><i class="fa-solid fa-code-branch"></i> Branches</li>
+                <li class="{{ $currentSection === 'accounts' ? 'active' : '' }}" data-target="accounts-section"><i class="fa-solid fa-wallet"></i> Accounts</li>
+                <li class="{{ $currentSection === 'loans' ? 'active' : '' }}" data-target="loans-section"><i class="fa-solid fa-hand-holding-dollar"></i> Loan Approval</li>
                 
                 <div class="nav-section">Reports & Logs</div>
-                <li data-target="reports-section"><i class="fa-solid fa-file-invoice"></i> Reports</li>
-                <li data-target="audit-section"><i class="fa-solid fa-clipboard-list"></i> Audit Logs</li>
-                <li data-target="notifications-section"><i class="fa-regular fa-bell"></i> Notifications</li>
+                <li class="{{ $currentSection === 'reports' ? 'active' : '' }}" data-target="reports-section"><i class="fa-solid fa-file-invoice"></i> Reports</li>
+                <li class="{{ $currentSection === 'audit-logs' ? 'active' : '' }}" data-target="audit-section"><i class="fa-solid fa-clipboard-list"></i> Audit Logs</li>
                 
                 <div class="nav-section">System</div>
-                <li data-target="settings-section"><i class="fa-solid fa-gear"></i> Settings</li>
-                <li data-target="profile-section"><i class="fa-solid fa-user"></i> Profile</li>
+                <li class="{{ $currentSection === 'settings' ? 'active' : '' }}" data-target="settings-section"><i class="fa-solid fa-gear"></i> Settings</li>
+                <li class="{{ $currentSection === 'profile' ? 'active' : '' }}" data-target="profile-section"><i class="fa-solid fa-user"></i> Profile</li>
             </ul>
             <div style="margin-top: auto; padding: 24px;">
                 <form action="{{ route('logout') }}" method="POST">
@@ -124,18 +125,15 @@
         <main class="admin-main">
             <header class="admin-header">
                 <div>
-                    <h2 id="header-title" style="color: #2b3674; margin: 0 0 5px 0;">Admin Dashboard</h2>
-                    <p id="header-subtitle" style="color: #a3aed1; font-size: 0.9rem; margin: 0;">Welcome back, Admin! Here's an overview of your bank.</p>
+                    <h2 id="header-title" style="color: #2b3674; margin: 0 0 5px 0;">
+                        {{ ucfirst($currentSection) }}
+                    </h2>
+                    <p id="header-subtitle" style="color: #a3aed1; font-size: 0.9rem; margin: 0;">Welcome back, Admin! Here's your systems panel.</p>
                 </div>
                 <div class="admin-header-right">
-                    <div class="search-box">
-                        <i class="fa-solid fa-search" style="color: #a3aed1;"></i>
-                        <input type="text" placeholder="Search anything...">
-                    </div>
-                    <i class="fa-regular fa-bell" style="font-size: 1.2rem; color: #a3aed1; cursor: pointer;"></i>
                     <div class="admin-profile">
                         <div style="text-align: right;">
-                            <h4 style="color: #2b3674; font-size: 0.9rem; margin: 0;">{{ auth()->user()->first_name ?? 'Admin' }}</h4>
+                            <h4 style="color: #2b3674; font-size: 0.9rem; margin: 0;">{{ auth()->user()->first_name ?? 'Super' }} {{ auth()->user()->last_name ?? 'Admin' }}</h4>
                             <p style="color: #a3aed1; font-size: 0.75rem; margin: 0;">Super Admin</p>
                         </div>
                         <img src="https://i.pravatar.cc/150?img=11" alt="Profile">
@@ -144,284 +142,532 @@
             </header>
 
             <div class="admin-content">
-                
+                <!-- Session Alerts -->
+                @if(session('success'))
+                    <div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> {{ session('success') }}</div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation"></i> {{ session('error') }}</div>
+                @endif
+
                 <!-- 01. Dashboard Section -->
-                <section id="dashboard-section" class="content-section active">
-                    <div class="grid-6">
-                        <div class="admin-stat-card"><div class="icon blue"><i class="fa-solid fa-users"></i></div><div class="info"><p>Total Customers</p><h3>{{ number_format($stats['total_customers'] ?? 12850) }}</h3></div></div>
-                        <div class="admin-stat-card"><div class="icon green"><i class="fa-solid fa-user-tie"></i></div><div class="info"><p>Total Employees</p><h3>{{ number_format($stats['total_employees'] ?? 286) }}</h3></div></div>
-                        <div class="admin-stat-card"><div class="icon purple"><i class="fa-solid fa-wallet"></i></div><div class="info"><p>Total Accounts</p><h3>{{ number_format($stats['total_accounts'] ?? 18540) }}</h3></div></div>
-                        <div class="admin-stat-card"><div class="icon green"><i class="fa-solid fa-sack-dollar"></i></div><div class="info"><p>Total Balance</p><h3>${{ number_format($stats['total_balance'] ?? 245680000, 2) }}</h3></div></div>
-                        <div class="admin-stat-card"><div class="icon red"><i class="fa-solid fa-hand-holding-dollar"></i></div><div class="info"><p>Total Loans</p><h3>{{ number_format($stats['total_loans'] ?? 5430) }}</h3></div></div>
-                        <div class="admin-stat-card"><div class="icon orange"><i class="fa-solid fa-building"></i></div><div class="info"><p>Total Branches</p><h3>{{ $stats['total_branches'] ?? 24 }}</h3></div></div>
-                    </div>
-                    <div class="charts-row-1">
-                        <div class="chart-card"><h3>Account Types Overview</h3><div class="chart-container"><canvas id="accountTypesChart"></canvas></div></div>
-                        <div class="chart-card"><h3>Loan Overview</h3><div class="chart-container"><canvas id="loanOverviewChart"></canvas></div></div>
-                        <div class="chart-card">
-                            <h3>Recent Transactions</h3>
-                            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #e8f0fe; color: #4318ff; display: flex; align-items: center; justify-content: center; font-weight: bold;">R</div>
-                                        <div><p style="margin:0; font-weight: 600; color: #2b3674; font-size: 0.9rem;">Rahim Ahmed</p><p style="margin:0; font-size: 0.8rem; color: #a3aed1;">Transfer to ACC-52584</p></div>
-                                    </div>
-                                    <div style="text-align: right;"><p style="margin:0; font-weight: 600; color: #2b3674; font-size: 0.9rem;">$500.00</p><p style="margin:0; font-size: 0.8rem; color: #a3aed1;">02 Jul 2026</p></div>
+                <section id="dashboard-section" class="content-section {{ $currentSection === 'dashboard' ? 'active' : '' }}">
+                    @if(isset($stats))
+                        <div class="grid-6">
+                            <div class="admin-stat-card"><div class="icon blue"><i class="fa-solid fa-users"></i></div><div class="info"><p>Customers</p><h3>{{ number_format($stats->total_customers) }}</h3></div></div>
+                            <div class="admin-stat-card"><div class="icon green"><i class="fa-solid fa-user-tie"></i></div><div class="info"><p>Employees</p><h3>{{ number_format($stats->total_employees) }}</h3></div></div>
+                            <div class="admin-stat-card"><div class="icon orange"><i class="fa-solid fa-building"></i></div><div class="info"><p>Branches</p><h3>{{ number_format($stats->total_branches) }}</h3></div></div>
+                            <div class="admin-stat-card"><div class="icon purple"><i class="fa-solid fa-wallet"></i></div><div class="info"><p>Accounts</p><h3>{{ number_format($stats->total_accounts) }}</h3></div></div>
+                            <div class="admin-stat-card"><div class="icon red"><i class="fa-solid fa-hand-holding-dollar"></i></div><div class="info"><p>Loans</p><h3>{{ number_format($stats->total_loans) }}</h3></div></div>
+                            <div class="admin-stat-card"><div class="icon green"><i class="fa-solid fa-sack-dollar"></i></div><div class="info"><p>Total Deposits</p><h3>${{ number_format($stats->total_deposits, 2) }}</h3></div></div>
+                        </div>
+                        
+                        <div class="charts-row-1">
+                            <div class="chart-card">
+                                <h3>Monthly Transactions Summary (Oracle View)</h3>
+                                <div class="chart-container">
+                                    <canvas id="monthlyTransChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Total Deposits vs Loans Ratio</h3>
+                                <div class="chart-container">
+                                    <canvas id="depositsLoansRatioChart"></canvas>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="charts-row-2">
-                        <div class="chart-card"><h3>Branch Distribution</h3><div class="chart-container"><canvas id="branchDistributionChart"></canvas></div></div>
-                        <div class="chart-card"><h3>Account Status</h3><div class="chart-container"><canvas id="accountStatusChart"></canvas></div></div>
-                        <div class="chart-card"><h3>Loan Status</h3><div class="chart-container"><canvas id="loanStatusChart"></canvas></div></div>
-                    </div>
+                    @endif
                 </section>
 
                 <!-- 02. Customers Section -->
-                <section id="customers-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Customers</h3>
-                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add Customer</button>
+                <section id="customers-section" class="content-section {{ $currentSection === 'customers' ? 'active' : '' }}">
+                    @if(isset($customers))
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3>Customer Management</h3>
+                                <form action="{{ route('admin.customers') }}" method="GET" style="display: flex; gap: 10px;">
+                                    <input type="text" name="search" placeholder="Search customers..." value="{{ request('search') }}" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none;">
+                                    <button type="submit" class="btn-primary">Search</button>
+                                </form>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer ID</th>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>NID</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($customers as $customer)
+                                        <tr>
+                                            <td>{{ $customer->customer_id }}</td>
+                                            <td>{{ $customer->full_name }}</td>
+                                            <td>{{ $customer->email }}</td>
+                                            <td>{{ $customer->phone }}</td>
+                                            <td>{{ $customer->nid }}</td>
+                                            <td>
+                                                <span class="badge {{ $customer->status === 'ACTIVE' ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $customer->status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form action="{{ route('admin.customers.suspend', $customer->id) }}" method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="status" value="{{ $customer->status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' }}">
+                                                    <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: {{ $customer->status === 'ACTIVE' ? '#ef4444' : '#059669' }}">
+                                                        {{ $customer->status === 'ACTIVE' ? 'Suspend' : 'Activate' }}
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="7">No customers found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                            <div style="padding: 15px 24px;">
+                                {{ $customers->appends(request()->query())->links() }}
+                            </div>
                         </div>
-                        <table class="data-table">
-                            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Action</th></tr></thead>
-                            <tbody>
-                                <tr><td>CUS001</td><td>Rahim Ahmed</td><td>rahim@email.com</td><td>01712345678</td><td><span class="badge badge-success">Active</span></td><td><i class="fa-solid fa-pen" style="color: #4318ff; cursor:pointer;"></i></td></tr>
-                                <tr><td>CUS002</td><td>Sumaiya Akter</td><td>sumaiya@email.com</td><td>01812345678</td><td><span class="badge badge-success">Active</span></td><td><i class="fa-solid fa-pen" style="color: #4318ff; cursor:pointer;"></i></td></tr>
-                                <tr><td>CUS003</td><td>Nusrat Jahan</td><td>nusrat@email.com</td><td>01912345678</td><td><span class="badge badge-warning">Inactive</span></td><td><i class="fa-solid fa-pen" style="color: #4318ff; cursor:pointer;"></i></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    @endif
                 </section>
 
                 <!-- 03. Employees Section -->
-                <section id="employees-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Employees</h3>
-                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add Employee</button>
+                <section id="employees-section" class="content-section {{ $currentSection === 'employees' ? 'active' : '' }}">
+                    @if(isset($employees))
+                        <div class="table-container" style="padding: 24px; margin-bottom: 30px;">
+                            <h3>Add New Employee (Oracle Stored Procedure)</h3>
+                            <form action="{{ route('admin.employees.store') }}" method="POST" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                                @csrf
+                                <input type="text" name="first_name" placeholder="First Name" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="text" name="last_name" placeholder="Last Name" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="email" name="email" placeholder="Email" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="text" name="phone" placeholder="Phone" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="text" name="address" placeholder="Address" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="text" name="nid" placeholder="NID" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="date" name="dob" placeholder="DOB" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <input type="password" name="password" placeholder="Password" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <select name="branch_id" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                    <option value="">Select Assign Branch</option>
+                                    @foreach($branches as $b)
+                                        <option value="{{ $b->branch_id }}">{{ $b->branch_name }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" class="btn-primary" style="grid-column: span 3; justify-content: center; font-size: 1rem;"><i class="fa-solid fa-plus"></i> Create Employee via PL/SQL</button>
+                            </form>
                         </div>
-                        <table class="data-table">
-                            <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Manager</th><th>Join Date</th><th>Status</th></tr></thead>
-                            <tbody>
-                                <tr><td>EMP001</td><td>Ashikur Rahman</td><td>Manager</td><td>Admin</td><td>01 Jan 2024</td><td><span class="badge badge-success">Active</span></td></tr>
-                                <tr><td>EMP002</td><td>Farhana Islam</td><td>Officer</td><td>EMP001</td><td>15 Feb 2024</td><td><span class="badge badge-success">Active</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3>Employee Database</h3>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($employees as $emp)
+                                        <tr>
+                                            <td>{{ $emp->customer_id }}</td>
+                                            <td>{{ $emp->first_name }} {{ $emp->last_name }}</td>
+                                            <td>{{ $emp->email }}</td>
+                                            <td>{{ $emp->phone }}</td>
+                                            <td>
+                                                <span class="badge {{ $emp->status === 'ACTIVE' ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $emp->status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form action="{{ route('admin.employees.toggle', $emp->id) }}" method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: {{ $emp->status === 'ACTIVE' ? '#ef4444' : '#059669' }}">
+                                                        {{ $emp->status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="6">No employees found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </section>
 
-                <!-- 04. Accounts Section -->
-                <section id="accounts-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Accounts</h3>
-                        </div>
-                        <table class="data-table">
-                            <thead><tr><th>Account No.</th><th>Customer Name</th><th>Type</th><th>Balance</th><th>Status</th></tr></thead>
-                            <tbody>
-                                <tr><td>ACC-12314</td><td>Rahim Ahmed</td><td>Savings</td><td>$25,600.00</td><td><span class="badge badge-success">Active</span></td></tr>
-                                <tr><td>ACC-55284</td><td>Sumaiya Akter</td><td>Current</td><td>$15,750.00</td><td><span class="badge badge-success">Active</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-                <!-- 05. Loans Section -->
-                <section id="loans-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Loans</h3>
-                        </div>
-                        <table class="data-table">
-                            <thead><tr><th>Loan ID</th><th>Customer Name</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
-                            <tbody>
-                                <tr><td>L001</td><td>Rahim Ahmed</td><td>Personal Loan</td><td>$50,000.00</td><td><span class="badge badge-success">Active</span></td></tr>
-                                <tr><td>L002</td><td>Omar Faruk</td><td>Business Loan</td><td>$15,000.00</td><td><span class="badge badge-info">Completed</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-                <!-- 06. Transactions Section -->
-                <section id="transactions-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Transactions</h3>
-                        </div>
-                        <table class="data-table">
-                            <thead><tr><th>ID</th><th>Date</th><th>Account No.</th><th>Type</th><th>Amount</th></tr></thead>
-                            <tbody>
-                                <tr><td>TXN1001</td><td>02 Jul 2026</td><td>ACC-12314</td><td>Deposit</td><td><span style="color: #059669; font-weight:bold;">+$850.00</span></td></tr>
-                                <tr><td>TXN1002</td><td>02 Jul 2026</td><td>ACC-55284</td><td>Withdrawal</td><td><span style="color: #ef4444; font-weight:bold;">-$1,500.00</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-                <!-- 07. Transfers Section -->
-                <section id="transfers-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Transfers</h3>
-                        </div>
-                        <table class="data-table">
-                            <thead><tr><th>ID</th><th>Date</th><th>From Account</th><th>To Account</th><th>Amount</th><th>Status</th></tr></thead>
-                            <tbody>
-                                <tr><td>TRF1001</td><td>02 Jul 2026</td><td>ACC-12314</td><td>ACC-52584</td><td>$500.00</td><td><span class="badge badge-success">Completed</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-                <!-- 08. Branches Section -->
-                <section id="branches-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Branches</h3>
-                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add Branch</button>
-                        </div>
-                        <table class="data-table">
-                            <thead><tr><th>ID</th><th>Branch Name</th><th>Location</th><th>Manager</th><th>Status</th></tr></thead>
-                            <tbody>
-                                <tr><td>BR001</td><td>Dhaka Main Branch</td><td>Dhaka</td><td>Ashikur Rahman</td><td><span class="badge badge-success">Active</span></td></tr>
-                                <tr><td>BR002</td><td>Chittagong Branch</td><td>Chittagong</td><td>Farhana Islam</td><td><span class="badge badge-success">Active</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-                <!-- 09. Reports Section -->
-                <section id="reports-section" class="content-section">
-                    <h3 style="color: #2b3674; margin-bottom: 20px;">System Reports</h3>
-                    <div class="reports-grid">
-                        <div class="report-card">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <div class="icon-box" style="background:#e8f0fe; color:#4318ff;"><i class="fa-solid fa-user-chart"></i></div>
-                                <div class="text-box"><h4>Customer Report</h4><p>View customer details and statistics</p></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
-                        </div>
-                        <div class="report-card">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <div class="icon-box" style="background:#e6faf0; color:#059669;"><i class="fa-solid fa-wallet"></i></div>
-                                <div class="text-box"><h4>Account Report</h4><p>View account summary and details</p></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
-                        </div>
-                        <div class="report-card">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <div class="icon-box" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                                <div class="text-box"><h4>Loan Report</h4><p>View loan statistics and details</p></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
-                        </div>
-                        <div class="report-card">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <div class="icon-box" style="background:#fee2e2; color:#ef4444;"><i class="fa-solid fa-money-bill-transfer"></i></div>
-                                <div class="text-box"><h4>Transaction Report</h4><p>View transaction summary and details</p></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
-                        </div>
-                        <div class="report-card">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <div class="icon-box" style="background:#f3e8ff; color:#8b5cf6;"><i class="fa-solid fa-code-branch"></i></div>
-                                <div class="text-box"><h4>Branch Report</h4><p>View branch performance report</p></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
-                        </div>
-                        <div class="report-card">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <div class="icon-box" style="background:#e0f2fe; color:#075985;"><i class="fa-solid fa-chart-line"></i></div>
-                                <div class="text-box"><h4>Financial Report</h4><p>View financial overview report</p></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- 10. Audit Logs Section -->
-                <section id="audit-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Audit Logs</h3>
-                        </div>
-                        <table class="data-table">
-                            <thead><tr><th>Log ID</th><th>Table Name</th><th>Action</th><th>Performed By</th><th>Date</th></tr></thead>
-                            <tbody>
-                                <tr><td>LOG1001</td><td>ACCOUNTS</td><td><span class="badge badge-success">INSERT</span></td><td>Ashikur Rahman</td><td>02 Jul 2026 10:14 AM</td></tr>
-                                <tr><td>LOG1002</td><td>LOANS</td><td><span class="badge badge-warning">UPDATE</span></td><td>Farhana Islam</td><td>02 Jul 2026 03:45 PM</td></tr>
-                                <tr><td>LOG1003</td><td>USERS</td><td><span class="badge badge-danger">DELETE</span></td><td>Super Admin</td><td>01 Jul 2026 09:20 AM</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-                <!-- 11. Notifications Section -->
-                <section id="notifications-section" class="content-section">
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Notifications</h3>
-                            <a href="#" style="color:#4318ff; text-decoration:none; font-size:0.9rem; font-weight:600;">Mark all as read</a>
-                        </div>
-                        <div style="padding: 20px 24px;">
-                            <div style="display:flex; align-items:center; gap:15px; padding:15px 0; border-bottom:1px solid #f1f5f9;">
-                                <div style="width:40px; height:40px; border-radius:50%; background:#e0f2fe; color:#075985; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-user-plus"></i></div>
-                                <div style="flex:1;"><p style="margin:0; color:#2b3674; font-weight:500;">New customer Rahim Ahmed has been registered.</p></div>
-                                <div style="color:#a3aed1; font-size:0.85rem;">2 mins ago</div>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:15px; padding:15px 0; border-bottom:1px solid #f1f5f9;">
-                                <div style="width:40px; height:40px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-file-signature"></i></div>
-                                <div style="flex:1;"><p style="margin:0; color:#2b3674; font-weight:500;">Loan approved for customer Sumaiya Akter.</p></div>
-                                <div style="color:#a3aed1; font-size:0.85rem;">15 mins ago</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- 12. Settings Section -->
-                <section id="settings-section" class="content-section">
-                    <div class="table-container" style="padding: 30px;">
-                        <h3 style="color: #2b3674; margin-bottom: 20px;">General Settings</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                            <div>
-                                <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Bank Name</label>
-                                <input type="text" value="Nexus Bank Limited" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
-                            </div>
-                            <div>
-                                <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Currency</label>
-                                <select style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
-                                    <option>USD ($)</option>
-                                    <option>BDT (৳)</option>
+                <!-- 04. Branches Section -->
+                <section id="branches-section" class="content-section {{ $currentSection === 'branches' ? 'active' : '' }}">
+                    @if(isset($branches) && $currentSection === 'branches')
+                        <div class="table-container" style="padding: 24px; margin-bottom: 30px;">
+                            <h3>Add New Branch (Oracle PL/SQL procedure)</h3>
+                            <form action="{{ route('admin.branches.store') }}" method="POST" style="display:flex; gap: 15px; margin-top: 15px;">
+                                @csrf
+                                <input type="text" name="branch_name" placeholder="Branch Name" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; flex: 1;">
+                                <input type="text" name="location" placeholder="Location" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; flex: 1;">
+                                <select name="manager_employee_id" style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; flex: 1;">
+                                    <option value="">Assign Manager Employee ID</option>
+                                    @foreach($employees as $emp)
+                                        <option value="{{ $emp->customer_id }}">{{ $emp->first_name }} {{ $emp->last_name }} ({{ $emp->customer_id }})</option>
+                                    @endforeach
                                 </select>
+                                <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Create Branch</button>
+                            </form>
+                        </div>
+
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3>Branches List</h3>
                             </div>
-                            <div>
-                                <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Time Zone</label>
-                                <select style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
-                                    <option>UTC +06:00 Dhaka</option>
-                                </select>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Branch ID</th>
+                                        <th>Branch Name</th>
+                                        <th>Location</th>
+                                        <th>Manager</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($branches as $branch)
+                                        <tr>
+                                            <td>{{ $branch->branch_id }}</td>
+                                            <td>{{ $branch->branch_name }}</td>
+                                            <td>{{ $branch->location }}</td>
+                                            <td>{{ $branch->first_name ? $branch->first_name . ' ' . $branch->last_name : 'Unassigned' }}</td>
+                                            <td>
+                                                <span class="badge {{ $branch->status === 'ACTIVE' ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $branch->status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form action="{{ route('admin.branches.update', $branch->branch_id) }}" method="POST" style="display:inline-flex; gap: 5px;">
+                                                    @csrf
+                                                    <input type="hidden" name="branch_name" value="{{ $branch->branch_name }}">
+                                                    <input type="hidden" name="location" value="{{ $branch->location }}">
+                                                    <select name="manager_employee_id" style="padding: 6px; font-size:0.8rem; border-radius:4px; border: 1px solid #e2e8f0;">
+                                                        <option value="">Select Manager</option>
+                                                        @foreach($employees as $emp)
+                                                            <option value="{{ $emp->customer_id }}" {{ $branch->manager_employee_id === $emp->customer_id ? 'selected' : '' }}>
+                                                                {{ $emp->first_name }} ({{ $emp->customer_id }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    <select name="status" style="padding: 6px; font-size:0.8rem; border-radius:4px; border: 1px solid #e2e8f0;">
+                                                        <option value="ACTIVE" {{ $branch->status === 'ACTIVE' ? 'selected' : '' }}>Active</option>
+                                                        <option value="INACTIVE" {{ $branch->status === 'INACTIVE' ? 'selected' : '' }}>Inactive</option>
+                                                    </select>
+                                                    <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">Update</button>
+                                                </form>
+                                                
+                                                <form action="{{ route('admin.branches.delete', $branch->branch_id) }}" method="POST" style="display:inline; margin-left: 5px;">
+                                                    @csrf
+                                                    <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: #ef4444;" onclick="return confirm('Are you sure you want to delete this branch?')">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="6">No branches found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </section>
+
+                <!-- 05. Accounts Section -->
+                <section id="accounts-section" class="content-section {{ $currentSection === 'accounts' ? 'active' : '' }}">
+                    @if(isset($accounts))
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3>Account Monitoring</h3>
+                                <form action="{{ route('admin.accounts') }}" method="GET" style="display:flex; gap: 10px;">
+                                    <input type="text" name="search" placeholder="Search account or client..." value="{{ request('search') }}" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none;">
+                                    <select name="branch_id" style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none;">
+                                        <option value="">All Branches</option>
+                                        @foreach($branches as $b)
+                                            <option value="{{ $b->branch_id }}" {{ request('branch_id') == $b->branch_id ? 'selected' : '' }}>{{ $b->branch_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select name="status" style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none;">
+                                        <option value="">All Statuses</option>
+                                        <option value="Active" {{ request('status') === 'Active' ? 'selected' : '' }}>Active</option>
+                                        <option value="Pending" {{ request('status') === 'Pending' ? 'selected' : '' }}>Pending</option>
+                                    </select>
+                                    <button type="submit" class="btn-primary">Filter</button>
+                                </form>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Account No.</th>
+                                        <th>Customer</th>
+                                        <th>Branch</th>
+                                        <th>Type</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($accounts as $acc)
+                                        <tr>
+                                            <td>{{ $acc->account_number }}</td>
+                                            <td>{{ $acc->user->first_name ?? '' }} {{ $acc->user->last_name ?? '' }} ({{ $acc->user->customer_id ?? 'Unknown' }})</td>
+                                            <td>{{ $acc->branch->branch_name ?? 'Central Branch' }}</td>
+                                            <td>{{ $acc->account_type }}</td>
+                                            <td>${{ number_format($acc->balance, 2) }}</td>
+                                            <td>
+                                                <span class="badge {{ $acc->status === 'Active' ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $acc->status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="6">No accounts found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                            <div style="padding: 15px 24px;">
+                                {{ $accounts->appends(request()->query())->links() }}
                             </div>
                         </div>
-                        <button class="btn-primary" style="margin-top: 30px;">Save Changes</button>
-                    </div>
+                    @endif
                 </section>
-                
-                <!-- 13. Profile Section -->
-                <section id="profile-section" class="content-section">
+
+                <!-- 06. Loans Section -->
+                <section id="loans-section" class="content-section {{ $currentSection === 'loans' ? 'active' : '' }}">
+                    @if(isset($loans))
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3>Loan Final Approval Panel</h3>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Loan ID</th>
+                                        <th>Client</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($loans as $loan)
+                                        <tr>
+                                            <td>LN-{{ $loan->id }}</td>
+                                            <td>{{ $loan->first_name }} {{ $loan->last_name }} ({{ $loan->customer_id }})</td>
+                                            <td>{{ $loan->loan_type }}</td>
+                                            <td>${{ number_format($loan->amount, 2) }}</td>
+                                            <td>{{ $loan->duration_months }} Months</td>
+                                            <td>
+                                                <span class="badge @if($loan->status === 'Pending') badge-warning @elseif($loan->status === 'Approved') badge-success @else badge-danger @endif">
+                                                    {{ $loan->status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if($loan->status === 'Pending')
+                                                    <div style="display:flex; gap:10px;">
+                                                        <form action="{{ route('admin.loans.approve', $loan->id) }}" method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="badge badge-success" style="border:none; cursor:pointer; font-family: inherit;">Approve via PL/SQL</button>
+                                                        </form>
+                                                        <form action="{{ route('admin.loans.reject', $loan->id) }}" method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="badge badge-danger" style="border:none; cursor:pointer; font-family: inherit;">Reject</button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="7">No loan requests found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </section>
+
+                <!-- 07. Reports Section -->
+                <section id="reports-section" class="content-section {{ $currentSection === 'reports' ? 'active' : '' }}">
+                    @if(isset($customerReport))
+                        <div class="table-container" style="margin-bottom: 30px;">
+                            <div class="table-header"><h3>Customer Database Report (Read-Only)</h3></div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($customerReport as $cust)
+                                        <tr>
+                                            <td>{{ $cust->customer_id }}</td>
+                                            <td>{{ $cust->full_name }}</td>
+                                            <td>{{ $cust->email }}</td>
+                                            <td>{{ $cust->phone }}</td>
+                                            <td>{{ $cust->status }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-container" style="margin-bottom: 30px;">
+                            <div class="table-header"><h3>Employee Roster Report (Read-Only)</h3></div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Branch</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($employeeReport as $emp)
+                                        <tr>
+                                            <td>{{ $emp->customer_id }}</td>
+                                            <td>{{ $emp->first_name }} {{ $emp->last_name }}</td>
+                                            <td>{{ $emp->email }}</td>
+                                            <td>{{ $emp->branch_name ?? 'Central Branch' }}</td>
+                                            <td>{{ $emp->status }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-container" style="margin-bottom: 30px;">
+                            <div class="table-header"><h3>Branch Summary Report (Oracle View)</h3></div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Branch ID</th>
+                                        <th>Branch Name</th>
+                                        <th>Total Accounts</th>
+                                        <th>Total Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($branchReport as $br)
+                                        <tr>
+                                            <td>{{ $br->branch_id }}</td>
+                                            <td>{{ $br->branch_name }}</td>
+                                            <td>{{ $br->total_accounts }}</td>
+                                            <td>${{ number_format($br->total_balance, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </section>
+
+                <!-- 08. Audit Logs Section -->
+                <section id="audit-section" class="content-section {{ $currentSection === 'audit-logs' ? 'active' : '' }}">
+                    @if(isset($logs))
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3>Audit Logs (Triggered automatically by database changes)</h3>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Log ID</th>
+                                        <th>Table Name</th>
+                                        <th>Action</th>
+                                        <th>Performed By</th>
+                                        <th>Details</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($logs as $log)
+                                        <tr>
+                                            <td>{{ $log->id }}</td>
+                                            <td>{{ $log->table_name }}</td>
+                                            <td><span class="badge @if($log->action === 'INSERT') badge-success @elseif($log->action === 'UPDATE') badge-warning @else badge-danger @endif">{{ $log->action }}</span></td>
+                                            <td>{{ $log->performed_by }}</td>
+                                            <td>{{ $log->details }}</td>
+                                            <td>{{ $log->created_at }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="6">No logs found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                            <div style="padding: 15px 24px;">
+                                {{ $logs->appends(request()->query())->links() }}
+                            </div>
+                        </div>
+                    @endif
+                </section>
+
+                <!-- 09. Settings Section -->
+                <section id="settings-section" class="content-section {{ $currentSection === 'settings' ? 'active' : '' }}">
+                    @if(isset($settings))
+                        <div class="table-container" style="padding: 30px;">
+                            <h3 style="color: #2b3674; margin-bottom: 20px;">System Parameters</h3>
+                            <form action="{{ route('admin.settings.update') }}" method="POST" style="display:grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                                @csrf
+                                <div>
+                                    <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Interest Rate (%)</label>
+                                    <input type="number" step="0.01" name="interest_rate" value="{{ $settings['INTEREST_RATE'] ?? '5.0' }}" required style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                                </div>
+                                <div>
+                                    <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Loan Interest Rate (%)</label>
+                                    <input type="number" step="0.01" name="loan_interest" value="{{ $settings['LOAN_INTEREST'] ?? '8.5' }}" required style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                                </div>
+                                <div>
+                                    <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">OTP Expiry Time (Minutes)</label>
+                                    <input type="number" name="otp_expiry" value="{{ $settings['OTP_EXPIRY'] ?? '10' }}" required style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                                </div>
+                                <div>
+                                    <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Minimum Required Balance ($)</label>
+                                    <input type="number" name="minimum_balance" value="{{ $settings['MINIMUM_BALANCE'] ?? '500' }}" required style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                                </div>
+                                <button type="submit" class="btn-primary" style="grid-column: span 2; margin-top:20px; justify-content: center; font-size: 1rem;"><i class="fa-solid fa-save"></i> Save Settings</button>
+                            </form>
+                        </div>
+                    @endif
+                </section>
+
+                <!-- 10. Profile Section -->
+                <section id="profile-section" class="content-section {{ $currentSection === 'profile' ? 'active' : '' }}">
                     <div class="table-container" style="padding: 30px; display:flex; gap:40px;">
                         <div style="text-align:center;">
                             <img src="https://i.pravatar.cc/150?img=11" alt="Profile" style="width:120px; height:120px; border-radius:50%; margin-bottom:15px;">
                             <h3 style="color:#2b3674; margin:0;">Super Admin</h3>
                             <p style="color:#a3aed1; font-size:0.9rem; margin-top:5px;">System Administrator</p>
-                            <button class="btn-primary" style="margin: 15px auto;">Edit Profile</button>
                         </div>
                         <div style="flex:1;">
                             <h3 style="color: #2b3674; margin-bottom: 20px;">Profile Information</h3>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                                 <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Full Name</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">Super Admin</p></div>
-                                <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Email</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">admin@nexus.com</p></div>
+                                <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Email</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">{{ auth()->user()->email ?? 'admin@nexus.com' }}</p></div>
                                 <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Phone</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">+880 1712 345678</p></div>
                                 <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Role</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">Admin</p></div>
                             </div>
@@ -434,73 +680,85 @@
     </div>
 
     <script>
-        // JS Navigation logic
+        // JS Navigation logic (Redirects to correct data loading routes on menu clicks)
         const navLinks = document.querySelectorAll('.nav-links li[data-target]');
-        const sections = document.querySelectorAll('.content-section');
-        const headerTitle = document.getElementById('header-title');
-        const headerSubtitle = document.getElementById('header-subtitle');
-
+        
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
-                // Remove active class from all links
-                navLinks.forEach(l => l.classList.remove('active'));
-                // Add active class to clicked link
-                this.classList.add('active');
+                const target = this.getAttribute('data-target');
+                let url = '{{ route("admin.dashboard") }}';
                 
-                // Hide all sections
-                sections.forEach(s => s.classList.remove('active'));
+                if (target === 'customers-section') url = '{{ route("admin.customers") }}';
+                else if (target === 'employees-section') url = '{{ route("admin.employees") }}';
+                else if (target === 'branches-section') url = '{{ route("admin.branches") }}';
+                else if (target === 'accounts-section') url = '{{ route("admin.accounts") }}';
+                else if (target === 'loans-section') url = '{{ route("admin.loans") }}';
+                else if (target === 'reports-section') url = '{{ route("admin.reports") }}';
+                else if (target === 'audit-section') url = '{{ route("admin.audit") }}';
+                else if (target === 'settings-section') url = '{{ route("admin.settings") }}';
                 
-                // Show target section
-                const targetId = this.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
-                
-                // Update header titles based on clicked section
-                const sectionName = this.innerText.trim();
-                if(sectionName === 'Dashboard') {
-                    headerTitle.innerText = 'Admin Dashboard';
-                    headerSubtitle.innerText = 'Welcome back, Admin! Here\'s an overview of your bank.';
-                } else {
-                    headerTitle.innerText = sectionName;
-                    headerSubtitle.innerText = 'Manage ' + sectionName.toLowerCase() + ' details and records.';
-                }
+                window.location.href = url;
             });
         });
 
-        // Chart configurations
-        const accountTypesCtx = document.getElementById('accountTypesChart').getContext('2d');
-        new Chart(accountTypesCtx, {
-            type: 'doughnut',
-            data: { labels: ['Savings', 'Current', 'Fixed Deposit', 'Others'], datasets: [{ data: [49.9, 33, 15.4, 1.7], backgroundColor: ['#4318ff', '#059669', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
-        });
+        // Charts configuration binding dynamic data
+        @if($currentSection === 'dashboard' && isset($stats))
+            // Monthly transactions line chart
+            const transCtx = document.getElementById('monthlyTransChart').getContext('2d');
+            const months = [
+                @foreach($monthlyTransactions as $item)
+                    '{{ $item->month }}',
+                @endforeach
+            ];
+            const amounts = [
+                @foreach($monthlyTransactions as $item)
+                    {{ $item->total_amount }},
+                @endforeach
+            ];
+            
+            new Chart(transCtx, {
+                type: 'line',
+                data: {
+                    labels: months.length > 0 ? months : ['Jan', 'Feb', 'Mar'],
+                    datasets: [{
+                        label: 'Total Transaction Amount ($)',
+                        data: amounts.length > 0 ? amounts : [1200, 1900, 3000],
+                        borderColor: '#4318ff',
+                        backgroundColor: 'rgba(67, 24, 255, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
 
-        const loanOverviewCtx = document.getElementById('loanOverviewChart').getContext('2d');
-        new Chart(loanOverviewCtx, {
-            type: 'doughnut',
-            data: { labels: ['Personal Loan', 'Home Loan', 'Business Loan', 'Other Loans'], datasets: [{ data: [45.1, 32.3, 17.5, 4.6], backgroundColor: ['#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
-        });
-
-        const branchDistCtx = document.getElementById('branchDistributionChart').getContext('2d');
-        new Chart(branchDistCtx, {
-            type: 'bar',
-            data: { labels: ['Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi'], datasets: [{ label: 'Branches', data: [5, 4, 3, 3, 3], backgroundColor: '#4318ff', borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-        });
-
-        const accountStatusCtx = document.getElementById('accountStatusChart').getContext('2d');
-        new Chart(accountStatusCtx, {
-            type: 'bar',
-            data: { labels: ['Active', 'Inactive', 'Closed', 'Frozen'], datasets: [{ label: 'Accounts', data: [15230, 1850, 980, 480], backgroundColor: ['#4318ff', '#ef4444', '#64748b', '#3b82f6'], borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-
-        const loanStatusCtx = document.getElementById('loanStatusChart').getContext('2d');
-        new Chart(loanStatusCtx, {
-            type: 'bar',
-            data: { labels: ['Active', 'Completed', 'Closed', 'Defaulted'], datasets: [{ label: 'Loans', data: [5230, 1850, 350, 130], backgroundColor: ['#10b981', '#8b5cf6', '#64748b', '#ef4444'], borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+            // Ratio of deposits vs loans chart
+            const ratioCtx = document.getElementById('depositsLoansRatioChart').getContext('2d');
+            new Chart(ratioCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Deposits ($)', 'Loans ($)'],
+                    datasets: [{
+                        data: [
+                            {{ $stats->total_deposits }},
+                            {{ $stats->total_loans * 15000 }} // Estimated average loan size for visualization
+                        ],
+                        backgroundColor: ['#059669', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        @endif
     </script>
 </body>
 </html>

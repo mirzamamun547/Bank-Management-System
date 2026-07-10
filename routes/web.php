@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return view('index');
@@ -38,8 +40,27 @@ Route::post('/employee/transfer/search', [EmployeeController::class, 'transferSe
 Route::post('/employee/transfer/otp',    [EmployeeController::class, 'transferGenerateOtp'])->middleware('auth')->name('employee.transfer.otp');
 Route::post('/employee/transfer/verify', [EmployeeController::class, 'transferVerifyOtp'])->middleware('auth')->name('employee.transfer.verify');
 
-// Admin Dashboard routes (New)
-Route::get('/admin-dashboard', [AdminController::class, 'dashboard'])->middleware('auth')->name('admin.dashboard');
+// Admin Dashboard and Management routes (Explicitly Defined)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin-dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/customers', [AdminController::class, 'customers'])->name('admin.customers');
+    Route::post('/admin/customers/{id}/suspend', [AdminController::class, 'suspendCustomer'])->name('admin.customers.suspend');
+    Route::get('/admin/employees', [AdminController::class, 'employees'])->name('admin.employees');
+    Route::post('/admin/employees/store', [AdminController::class, 'storeEmployee'])->name('admin.employees.store');
+    Route::post('/admin/employees/{id}/toggle', [AdminController::class, 'toggleEmployeeStatus'])->name('admin.employees.toggle');
+    Route::get('/admin/branches', [BranchController::class, 'index'])->name('admin.branches');
+    Route::post('/admin/branches/store', [BranchController::class, 'store'])->name('admin.branches.store');
+    Route::post('/admin/branches/{id}/update', [BranchController::class, 'update'])->name('admin.branches.update');
+    Route::post('/admin/branches/{id}/delete', [BranchController::class, 'destroy'])->name('admin.branches.delete');
+    Route::get('/admin/accounts', [AdminController::class, 'accounts'])->name('admin.accounts');
+    Route::get('/admin/loans', [AdminController::class, 'loans'])->name('admin.loans');
+    Route::post('/admin/loans/{id}/approve', [AdminController::class, 'approveLoan'])->name('admin.loans.approve');
+    Route::post('/admin/loans/{id}/reject', [AdminController::class, 'rejectLoan'])->name('admin.loans.reject');
+    Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.reports');
+    Route::get('/admin/audit-logs', [AdminController::class, 'auditLogs'])->name('admin.audit');
+    Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
+    Route::post('/admin/settings/update', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
+});
 
 // User section pages
 Route::get('/user-dashboard', [UserController::class, 'dashboard'])->middleware('auth')->name('user.dashboard');
