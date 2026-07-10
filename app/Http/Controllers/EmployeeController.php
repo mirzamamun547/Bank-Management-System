@@ -112,10 +112,12 @@ class EmployeeController extends Controller
 
         try {
             $pdo  = DB::getPdo();
-            $stmt = $pdo->prepare("BEGIN APPROVE_LOAN(:loan_id, :action, :performed_by); END;");
+            if ($action === 'APPROVE') {
+                $stmt = $pdo->prepare("BEGIN APPROVE_LOAN(:loan_id); END;");
+            } else {
+                $stmt = $pdo->prepare("BEGIN REJECT_LOAN(:loan_id); END;");
+            }
             $stmt->bindParam(':loan_id', $loanId);
-            $stmt->bindParam(':action', $action);
-            $stmt->bindParam(':performed_by', $performedBy);
             $stmt->execute();
         } catch (\Exception $e) {
             $errorMsg = $e->getMessage();
@@ -170,9 +172,9 @@ class EmployeeController extends Controller
         $request->validate(['account_number' => 'required|string', 'nid' => 'required|string']);
         $account = $this->findActiveAccount($request->account_number);
         if (!$account || strtolower($account->nid) !== strtolower($request->nid)) {
-            return redirect('/dashboard')->with('deposit_error', 'Invalid Account Number or NID. Please try again.');
+            return redirect('/employee-dashboard')->with('deposit_error', 'Invalid Account Number or NID. Please try again.');
         }
-        return redirect('/dashboard')->with('deposit_customer', [
+        return redirect('/employee-dashboard')->with('deposit_customer', [
             'account_id'     => $account->account_id,
             'account_number' => $account->account_number,
             'full_name'      => $account->full_name,
@@ -186,7 +188,7 @@ class EmployeeController extends Controller
         $request->validate(['account_number' => 'required|string', 'amount' => 'required|numeric|min:0.01']);
         $account = $this->findActiveAccount($request->account_number);
         if (!$account) {
-            return redirect('/dashboard')->with('deposit_error', ' Account not found.');
+            return redirect('/employee-dashboard')->with('deposit_error', ' Account not found.');
         }
 
         $otp   = $this->generateOtp();
@@ -208,7 +210,7 @@ class EmployeeController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/dashboard')
+        return redirect('/employee-dashboard')
             ->with('deposit_otp_id', $otpId)
             ->with('deposit_customer', [
                 'account_id'     => $account->account_id,
@@ -226,14 +228,14 @@ class EmployeeController extends Controller
     $record = DB::table('otp_verification')->where('id', $request->otp_id)->first();
 
     if (!$record) {
-        return redirect('/dashboard')->with('deposit_error', ' OTP session not found. Please start again.');
+        return redirect('/employee-dashboard')->with('deposit_error', ' OTP session not found. Please start again.');
     }
     if (Carbon::parse($record->expires_at)->isPast()) {
         DB::table('otp_verification')->where('id', $record->id)->delete();
-        return redirect('/dashboard')->with('deposit_error', 'OTP Expired. Please generate a new one.');
+        return redirect('/employee-dashboard')->with('deposit_error', 'OTP Expired. Please generate a new one.');
     }
     if ($record->otp !== $request->otp) {
-        return redirect('/dashboard')
+        return redirect('/employee-dashboard')
             ->with('deposit_error', ' Invalid OTP. Please try again.')
             ->with('deposit_otp_id', $record->id);
     }
@@ -261,10 +263,10 @@ class EmployeeController extends Controller
 
     } catch (\Exception $e) {
         \Illuminate\Support\Facades\Log::error('DO_DEPOSIT Error: ' . $e->getMessage());
-        return redirect('/dashboard')->with('deposit_error', ' Deposit failed: ' . $e->getMessage());
+        return redirect('/employee-dashboard')->with('deposit_error', ' Deposit failed: ' . $e->getMessage());
     }
 
-    return redirect('/dashboard')->with('deposit_success', 'Deposit of $' . number_format($record->amount, 2) . ' completed successfully!');
+    return redirect('/employee-dashboard')->with('deposit_success', 'Deposit of $' . number_format($record->amount, 2) . ' completed successfully!');
 }
     
    
@@ -273,9 +275,9 @@ class EmployeeController extends Controller
         $request->validate(['account_number' => 'required|string', 'nid' => 'required|string']);
         $account = $this->findActiveAccount($request->account_number);
         if (!$account || strtolower($account->nid) !== strtolower($request->nid)) {
-            return redirect('/dashboard')->with('withdraw_error', ' Invalid Account Number or NID. Please try again.');
+            return redirect('/employee-dashboard')->with('withdraw_error', ' Invalid Account Number or NID. Please try again.');
         }
-        return redirect('/dashboard')->with('withdraw_customer', [
+        return redirect('/employee-dashboard')->with('withdraw_customer', [
             'account_id'     => $account->account_id,
             'account_number' => $account->account_number,
             'full_name'      => $account->full_name,
@@ -289,10 +291,10 @@ class EmployeeController extends Controller
         $request->validate(['account_number' => 'required|string', 'amount' => 'required|numeric|min:0.01']);
         $account = $this->findActiveAccount($request->account_number);
         if (!$account) {
-            return redirect('/dashboard')->with('withdraw_error', ' Account not found.');
+            return redirect('/employee-dashboard')->with('withdraw_error', ' Account not found.');
         }
         if ($account->balance < $request->amount) {
-            return redirect('/dashboard')
+            return redirect('/employee-dashboard')
                 ->with('withdraw_error', ' Insufficient balance. Available: $' . number_format($account->balance, 2))
                 ->with('withdraw_customer', [
                     'account_id'     => $account->account_id,
@@ -322,7 +324,7 @@ class EmployeeController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/dashboard')
+        return redirect('/employee-dashboard')
             ->with('withdraw_otp_id', $otpId)
             ->with('withdraw_customer', [
                 'account_id'     => $account->account_id,
@@ -341,14 +343,14 @@ public function withdrawVerifyOtp(Request $request)
     $record = DB::table('otp_verification')->where('id', $request->otp_id)->first();
 
     if (!$record) {
-        return redirect('/dashboard')->with('withdraw_error', 'OTP session not found. Please start again.');
+        return redirect('/employee-dashboard')->with('withdraw_error', 'OTP session not found. Please start again.');
     }
     if (Carbon::parse($record->expires_at)->isPast()) {
         DB::table('otp_verification')->where('id', $record->id)->delete();
-        return redirect('/dashboard')->with('withdraw_error', 'OTP Expired. Please generate a new one.');
+        return redirect('/employee-dashboard')->with('withdraw_error', 'OTP Expired. Please generate a new one.');
     }
     if ($record->otp !== $request->otp) {
-        return redirect('/dashboard')
+        return redirect('/employee-dashboard')
             ->with('withdraw_error', 'Invalid OTP. Please try again.')
             ->with('withdraw_otp_id', $record->id);
     }
@@ -376,10 +378,10 @@ public function withdrawVerifyOtp(Request $request)
 
     } catch (\Exception $e) {
         \Illuminate\Support\Facades\Log::error('DO_WITHDRAW Error: ' . $e->getMessage());
-        return redirect('/dashboard')->with('withdraw_error', 'Withdrawal failed: ' . $e->getMessage());
+        return redirect('/employee-dashboard')->with('withdraw_error', 'Withdrawal failed: ' . $e->getMessage());
     }
 
-    return redirect('/dashboard')->with('withdraw_success', 'Withdrawal of $' . number_format($record->amount, 2) . ' completed successfully!');
+    return redirect('/employee-dashboard')->with('withdraw_success', 'Withdrawal of $' . number_format($record->amount, 2) . ' completed successfully!');
 }
     
     public function transferSearch(Request $request)
@@ -387,16 +389,16 @@ public function withdrawVerifyOtp(Request $request)
         $request->validate(['from_account' => 'required|string', 'to_account' => 'required|string', 'nid' => 'required|string']);
         $fromAccount = $this->findActiveAccount($request->from_account);
         if (!$fromAccount || strtolower($fromAccount->nid) !== strtolower($request->nid)) {
-            return redirect('/dashboard')->with('transfer_error', ' Source account validation failed. Check Account Number or NID.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' Source account validation failed. Check Account Number or NID.');
         }
         $toAccount = $this->findActiveAccount($request->to_account);
         if (!$toAccount) {
-            return redirect('/dashboard')->with('transfer_error', 'Destination account not found or inactive.');
+            return redirect('/employee-dashboard')->with('transfer_error', 'Destination account not found or inactive.');
         }
         if ($fromAccount->account_number === $toAccount->account_number) {
-            return redirect('/dashboard')->with('transfer_error', ' Cannot transfer to the same account.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' Cannot transfer to the same account.');
         }
-        return redirect('/dashboard')->with('transfer_accounts', [
+        return redirect('/employee-dashboard')->with('transfer_accounts', [
             'from_account' => $fromAccount->account_number, 'from_name'    => $fromAccount->full_name,
             'from_balance' => $fromAccount->balance,        'from_user_id' => $fromAccount->user_id,
             'to_account'   => $toAccount->account_number,  'to_name'      => $toAccount->full_name,
@@ -411,10 +413,10 @@ public function withdrawVerifyOtp(Request $request)
         $toAccount   = $this->findActiveAccount($request->to_account);
 
         if (!$fromAccount || $fromAccount->balance < $request->amount) {
-            return redirect('/dashboard')->with('transfer_error', ' Insufficient balance in source account.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' Insufficient balance in source account.');
         }
         if (!$toAccount) {
-            return redirect('/dashboard')->with('transfer_error', ' Destination account not found.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' Destination account not found.');
         }
 
         $otp   = $this->generateOtp();
@@ -437,7 +439,7 @@ public function withdrawVerifyOtp(Request $request)
             'updated_at' => now(),
         ]);
 
-        return redirect('/dashboard')
+        return redirect('/employee-dashboard')
             ->with('transfer_otp_id', $otpId)
             ->with('transfer_accounts', [
                 'from_account' => $request->from_account,  'from_name'    => $fromAccount->full_name,
@@ -454,14 +456,14 @@ public function withdrawVerifyOtp(Request $request)
         $record = DB::table('otp_verification')->where('id', $request->otp_id)->first();
 
         if (!$record) {
-            return redirect('/dashboard')->with('transfer_error', ' OTP session not found. Please start again.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' OTP session not found. Please start again.');
         }
         if (Carbon::parse($record->expires_at)->isPast()) {
             DB::table('otp_verification')->where('id', $record->id)->delete();
-            return redirect('/dashboard')->with('transfer_error', ' OTP Expired. Please generate a new one.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' OTP Expired. Please generate a new one.');
         }
         if ($record->otp !== $request->otp) {
-            return redirect('/dashboard')
+            return redirect('/employee-dashboard')
                 ->with('transfer_error', ' Invalid OTP. Please try again.')
                 ->with('transfer_otp_id', $record->id);
         }

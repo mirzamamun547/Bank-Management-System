@@ -166,12 +166,12 @@
 
     <td>
 
-        <a href="{{ route('customer.edit', $customer->id) }}"
+        <a href="{{ route('employee.customer.edit', $customer->id) }}"
            class="action-btn edit">
             <i class="fa-solid fa-pen"></i>
         </a>
 
-        <form action="{{ route('customer.delete', $customer->id) }}"
+        <form action="{{ route('employee.customer.delete', $customer->id) }}"
               method="POST"
               style="display:inline;">
 
@@ -350,14 +350,14 @@
                                 <td>{{ \Carbon\Carbon::parse($loan->created_at)->format('d M Y') }}</td>
                                 <td>
                                     <div style="display: flex; gap: 6px;">
-                                        <form action="{{ route('admin.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
+                                        <form action="{{ route('employee.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <input type="hidden" name="action" value="APPROVE">
                                             <button type="submit" class="btn primary-btn small-btn" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;" onclick="return confirm('Approve this loan for ${{ number_format($loan->amount, 2) }}?')">
                                                 <i class="fa-solid fa-check"></i> Approve
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
+                                        <form action="{{ route('employee.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <input type="hidden" name="action" value="REJECT">
                                             <button type="submit" class="btn outline small-btn" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);" onclick="return confirm('Reject this loan application?')">
@@ -401,7 +401,7 @@
                 <div class="step-badge">Step 1</div>
                 <h3>Search Customer</h3>
                 <p class="step-desc">Enter the customer's Account Number and NID to verify identity.</p>
-                <form id="depositSearchForm" method="POST" action="{{ route('admin.deposit.search') }}">
+                <form id="depositSearchForm" method="POST" action="{{ route('employee.deposit.search') }}">
                     @csrf
                     <div class="form-row">
                         <div class="form-group">
@@ -429,7 +429,7 @@
                     <div class="info-item"><span class="info-label">Current Balance</span><span class="info-value amount positive">${{ number_format($dc['balance'], 2) }}</span></div>
                 </div>
 
-                <form method="POST" action="{{ route('admin.deposit.otp') }}" style="margin-top: 20px;">
+                <form method="POST" action="{{ route('employee.deposit.otp') }}" style="margin-top: 20px;">
                     @csrf
                     <input type="hidden" name="account_number" value="{{ $dc['account_number'] }}">
                     <div class="form-group" style="max-width: 300px;">
@@ -447,7 +447,7 @@
                 <div class="step-badge">Step 4</div>
                 <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
                 <p class="step-desc">An OTP has been sent to the customer's Notifications page. Ask the customer for the code.</p>
-                <form method="POST" action="{{ route('admin.deposit.verify') }}">
+                <form method="POST" action="{{ route('employee.deposit.verify') }}">
                     @csrf
                     <input type="hidden" name="otp_id" value="{{ session('deposit_otp_id') }}">
                     <div class="form-group" style="max-width: 250px;">
@@ -485,7 +485,7 @@
                 <div class="step-badge">Step 1</div>
                 <h3>Search Customer</h3>
                 <p class="step-desc">Enter the customer's Account Number and NID to verify identity.</p>
-                <form method="POST" action="{{ route('admin.withdraw.search') }}">
+                <form method="POST" action="{{ route('employee.withdraw.search') }}">
                     @csrf
                     <div class="form-row">
                         <div class="form-group">
@@ -512,7 +512,7 @@
                     <div class="info-item"><span class="info-label">Current Balance</span><span class="info-value amount positive">${{ number_format($wc['balance'], 2) }}</span></div>
                 </div>
 
-                <form method="POST" action="{{ route('admin.withdraw.otp') }}" style="margin-top: 20px;">
+                <form method="POST" action="{{ route('employee.withdraw.otp') }}" style="margin-top: 20px;">
                     @csrf
                     <input type="hidden" name="account_number" value="{{ $wc['account_number'] }}">
                     <div class="form-group" style="max-width: 300px;">
@@ -529,7 +529,7 @@
                 <div class="step-badge">Step 4</div>
                 <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
                 <p class="step-desc">An OTP has been sent to the customer's Notifications page. Ask the customer for the code.</p>
-                <form method="POST" action="{{ route('admin.withdraw.verify') }}">
+                <form method="POST" action="{{ route('employee.withdraw.verify') }}">
                     @csrf
                     <input type="hidden" name="otp_id" value="{{ session('withdraw_otp_id') }}">
                     <div class="form-group" style="max-width: 250px;">
@@ -568,7 +568,7 @@
                 <div class="step-badge">Step 1</div>
                 <h3>Verify Source Account</h3>
                 <p class="step-desc">Enter the sender's Account Number, NID, and the destination account.</p>
-                <form method="POST" action="{{ route('admin.transfer.search') }}">
+                <form method="POST" action="{{ route('employee.transfer.search') }}">
                     @csrf
                     <div class="form-row">
                         <div class="form-group">
@@ -609,7 +609,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('admin.transfer.otp') }}" style="margin-top: 20px;">
+                <form method="POST" action="{{ route('employee.transfer.otp') }}" style="margin-top: 20px;">
                     @csrf
                     <input type="hidden" name="from_account" value="{{ $ta['from_account'] }}">
                     <input type="hidden" name="to_account" value="{{ $ta['to_account'] }}">
@@ -627,7 +627,7 @@
                 <div class="step-badge">Step 4</div>
                 <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
                 <p class="step-desc">An OTP has been sent to the sender's Notifications page. Ask the customer for the code.</p>
-                <form method="POST" action="{{ route('admin.transfer.verify') }}">
+                <form method="POST" action="{{ route('employee.transfer.verify') }}">
                     @csrf
                     <input type="hidden" name="otp_id" value="{{ session('transfer_otp_id') }}">
                     <div class="form-group" style="max-width: 250px;">
