@@ -65,19 +65,25 @@ class AuthController extends Controller
 
                 // Enforce role boundaries
                 if ($expectedRole === 'customer' && $role !== 'CUSTOMER') {
-                    return back()->withErrors(['login' => 'This login page is for customers only. Please use the Employee login.']);
+                    return back()->withErrors(['login' => 'This login page is for customers only. Please use the Customer login.']);
                 }
                 
-                if ($expectedRole === 'employee' && !in_array($role, ['EMPLOYEE', 'ADMIN'])) {
-                    return back()->withErrors(['login' => 'This login page is for employees only. Please use the Customer login.']);
+                if ($expectedRole === 'employee' && $role !== 'EMPLOYEE') {
+                    return back()->withErrors(['login' => 'This login page is for employees only. Please use the Employee login.']);
+                }
+
+                if ($expectedRole === 'admin' && $role !== 'ADMIN') {
+                    return back()->withErrors(['login' => 'This login page is for admins only. Please use the Admin login.']);
                 }
 
                 $remember = $request->has('remember');
                 Auth::login($user, $remember);
                 
                
-                if ($role === 'EMPLOYEE' || $role === 'ADMIN') {
-                    return redirect('/dashboard');
+                if ($role === 'ADMIN') {
+                    return redirect('/admin-dashboard');
+                } elseif ($role === 'EMPLOYEE') {
+                    return redirect('/employee-dashboard');
                 } else {
                     return redirect('/user-dashboard');
                 }

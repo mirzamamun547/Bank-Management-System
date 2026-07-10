@@ -3,898 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Bank Management System</title>
+    <title>Nexus Bank - Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Global & Layout */
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: #f4f7fe; }
+        .admin-layout { display: flex; height: 100vh; overflow: hidden; width: 100%; }
+        
+        /* Sidebar */
+        .dark-sidebar { width: 260px; background: #0b1437; color: #ffffff; display: flex; flex-direction: column; padding: 24px 0; z-index: 10; }
+        .dark-sidebar .logo { padding: 0 24px 32px; display: flex; align-items: center; gap: 12px; font-size: 1.2rem; }
+        .dark-sidebar .nav-links { list-style: none; flex-grow: 1; overflow-y: auto; padding: 0; margin: 0; }
+        .dark-sidebar .nav-links li { padding: 14px 24px; display: flex; align-items: center; gap: 12px; color: #a3aed1; cursor: pointer; transition: all 0.2s ease; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .dark-sidebar .nav-links li:hover { background: rgba(255,255,255,0.05); color: #ffffff; }
+        .dark-sidebar .nav-links li.active { background: #4318ff; color: #ffffff; border-left: 3px solid #ffffff; }
+        .dark-sidebar .nav-section { padding: 10px 24px 5px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6b7a99; margin-top: 15px; }
+        
+        /* Main Area */
+        .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .admin-header { background: #ffffff; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .admin-header .search-box { background: #f4f7fe; border-radius: 20px; padding: 8px 16px; display: flex; align-items: center; gap: 10px; width: 300px; }
+        .admin-header .search-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.9rem; }
+        .admin-header-right { display: flex; align-items: center; gap: 20px; }
+        .admin-profile { display: flex; align-items: center; gap: 10px; }
+        .admin-profile img { width: 40px; height: 40px; border-radius: 50%; }
+        .admin-content { flex: 1; padding: 32px; overflow-y: auto; }
+        
+        /* SPA Sections */
+        .content-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Dashboard Cards & Charts */
+        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; margin-bottom: 30px; }
+        .admin-stat-card { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 15px; }
+        .admin-stat-card .icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .admin-stat-card .icon.blue { background: #e8f0fe; color: #4318ff; }
+        .admin-stat-card .icon.green { background: #e6faf0; color: #059669; }
+        .admin-stat-card .icon.purple { background: #f3e8ff; color: #8b5cf6; }
+        .admin-stat-card .icon.orange { background: #fef3c7; color: #d97706; }
+        .admin-stat-card .icon.red { background: #fee2e2; color: #ef4444; }
+        .admin-stat-card .info p { font-size: 0.85rem; color: #a3aed1; margin-bottom: 5px; margin-top:0;}
+        .admin-stat-card .info h3 { font-size: 1.3rem; color: #2b3674; margin:0;}
+        .charts-row-1 { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 20px; margin-bottom: 30px; }
+        .charts-row-2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .chart-card { background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .chart-card h3 { font-size: 1.1rem; color: #2b3674; margin-top:0; margin-bottom: 20px; }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+
+        /* Tables & Lists */
+        .table-container { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 30px; }
+        .table-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .table-header h3 { margin: 0; color: #2b3674; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        .data-table th { font-size: 0.85rem; color: #a3aed1; font-weight: 600; text-transform: uppercase; }
+        .data-table td { font-size: 0.95rem; color: #2b3674; font-weight: 500; }
+        .data-table tbody tr:hover { background: #f8fafc; }
+        
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef9c3; color: #854d0e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #e0f2fe; color: #075985; }
+        
+        .btn-primary { background: #4318ff; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        
+        /* Reports Grid */
+        .reports-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .report-card { background: white; padding: 24px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .report-card:hover { transform: translateY(-3px); }
+        .report-card .icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .report-card .text-box h4 { margin: 0 0 5px 0; color: #2b3674; font-size: 1.1rem; }
+        .report-card .text-box p { margin: 0; color: #a3aed1; font-size: 0.85rem; }
+    </style>
 </head>
 <body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <nav class="dark-sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-building-columns"></i>
+                <h2>Nexus Bank</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-target="dashboard-section"><i class="fa-solid fa-chart-pie"></i> Dashboard</li>
+                
+                <div class="nav-section">Management</div>
+                <li data-target="customers-section"><i class="fa-solid fa-users"></i> Customers</li>
+                <li data-target="employees-section"><i class="fa-solid fa-user-tie"></i> Employees</li>
+                <li data-target="accounts-section"><i class="fa-solid fa-wallet"></i> Accounts</li>
+                <li data-target="loans-section"><i class="fa-solid fa-hand-holding-dollar"></i> Loans</li>
+                <li data-target="transactions-section"><i class="fa-solid fa-right-left"></i> Transactions</li>
+                <li data-target="transfers-section"><i class="fa-solid fa-money-bill-transfer"></i> Transfers</li>
+                <li data-target="branches-section"><i class="fa-solid fa-code-branch"></i> Branches</li>
+                
+                <div class="nav-section">Reports & Logs</div>
+                <li data-target="reports-section"><i class="fa-solid fa-file-invoice"></i> Reports</li>
+                <li data-target="audit-section"><i class="fa-solid fa-clipboard-list"></i> Audit Logs</li>
+                <li data-target="notifications-section"><i class="fa-regular fa-bell"></i> Notifications</li>
+                
+                <div class="nav-section">System</div>
+                <li data-target="settings-section"><i class="fa-solid fa-gear"></i> Settings</li>
+                <li data-target="profile-section"><i class="fa-solid fa-user"></i> Profile</li>
+            </ul>
+            <div style="margin-top: auto; padding: 24px;">
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.95rem; transition: background 0.2s;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </nav>
 
-    
-    <nav class="sidebar">
-        <div class="logo">
-            <i class="fa-solid fa-building-columns"></i>
-            <h2>Nexus Bank</h2>
-        </div>
-        <ul class="nav-links">
-            <li class="active" data-target="dashboard-section"><i class="fa-solid fa-chart-pie"></i> Dashboard</li>
-            <li data-target="customers-section"><i class="fa-solid fa-users"></i> Customers</li>
-            <li data-target="accounts-section"><i class="fa-solid fa-wallet"></i> Accounts</li>
-            <li data-target="loans-section"><i class="fa-solid fa-hand-holding-dollar"></i> Loans & Payments</li>
-            <li data-target="deposit-section"><i class="fa-solid fa-money-bill-wave"></i> Deposit Money</li>
-            <li data-target="withdraw-section"><i class="fa-solid fa-hand-holding-dollar"></i> Withdraw Money</li>
-            <li data-target="transfer-section"><i class="fa-solid fa-right-left"></i> Money Transfer</li>
-            <li data-target="profile-section"><i class="fa-solid fa-user"></i> My Profile</li>
-        </ul>
-        <div class="user-profile">
-            <img src="https://i.pravatar.cc/150?img=11" alt="Admin Profile">
-            <div>
-                <h4>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</h4>
-                <p>Role: {{ ucfirst(strtolower(auth()->user()->role ?? 'Admin')) }}</p>
-            </div>
-        </div>
-    </nav>
-
-   
-    <main class="main-content">
-        
-       
-        <header>
-            <div class="search-bar">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" placeholder="Search across bank records...">
-            </div>
-            <div class="header-actions">
-                <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
-                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
-            </div>
-        </header>
-
-        <!-- Dashboard Section -->
-        <section id="dashboard-section" class="content-section active">
-            <div class="section-header">
-                <h1>Overview</h1>
-                <p>Welcome back! Here's what's happening today.</p>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
-                    <div class="stat-info">
-                        <h3>Total Customers</h3>
-                        <h2>1,245</h2>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon green"><i class="fa-solid fa-vault"></i></div>
-                    <div class="stat-info">
-                        <h3>Total Deposits</h3>
-                        <h2>$4.2M</h2>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon orange"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                    <div class="stat-info">
-                        <h3>Active Loans</h3>
-                        <h2>$1.8M</h2>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon purple"><i class="fa-solid fa-id-badge"></i></div>
-                    <div class="stat-info">
-                        <h3>Employees</h3>
-                        <h2>42</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="recent-activity">
-                <h2>Recent Transactions</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Account No</th>
-                            <th>Customer Name</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ACC-9821</td>
-                            <td>Sarah Jenkins</td>
-                            <td><span class="badge info">Deposit</span></td>
-                            <td class="amount positive">+$1,500.00</td>
-                            <td><span class="badge success">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>ACC-4512</td>
-                            <td>Michael Chen</td>
-                            <td><span class="badge warning">Withdrawal</span></td>
-                            <td class="amount negative">-$400.00</td>
-                            <td><span class="badge success">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>ACC-7734</td>
-                            <td>Emma Stone</td>
-                            <td><span class="badge purple">Loan Payment</span></td>
-                            <td class="amount negative">-$850.00</td>
-                            <td><span class="badge pending">Processing</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Customers Section -->
-        <section id="customers-section" class="content-section">
-            <div class="section-header flex-between">
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
                 <div>
-                    <h1>Customers</h1>
-                    <p>Manage bank customers and their personal details.</p>
+                    <h2 id="header-title" style="color: #2b3674; margin: 0 0 5px 0;">Admin Dashboard</h2>
+                    <p id="header-subtitle" style="color: #a3aed1; font-size: 0.9rem; margin: 0;">Welcome back, Admin! Here's an overview of your bank.</p>
                 </div>
-                <button class="btn primary-btn" onclick="openModal('customerModal')"><i class="fa-solid fa-plus"></i> Add Customer</button>
-            </div>
-            
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Cust ID</th>
-                            <th>Name (First, Last)</th>
-                            <th>Mobile No</th>
-                            <th>Address</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-@forelse($customers as $customer)
-
-<tr>
-    <td>{{ $customer->customer_id }}</td>
-
-    <td>
-        {{ $customer->first_name }}
-        {{ $customer->last_name }}
-    </td>
-
-    <td>{{ $customer->phone }}</td>
-
-    <td>{{ $customer->address }}</td>
-
-    <td>
-
-        <a href="{{ route('customer.edit', $customer->id) }}"
-           class="action-btn edit">
-            <i class="fa-solid fa-pen"></i>
-        </a>
-
-        <form action="{{ route('customer.delete', $customer->id) }}"
-              method="POST"
-              style="display:inline;">
-
-            @csrf
-            @method('DELETE')
-
-            <button class="action-btn delete"
-                    onclick="return confirm('Delete this customer?')">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-
-        </form>
-
-    </td>
-
-</tr>
-
-@empty
-
-<tr>
-    <td colspan="5" style="text-align:center;">
-        No customers found.
-    </td>
-</tr>
-
-@endforelse
-
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-     
-        <section id="accounts-section" class="content-section">
-            <div class="section-header flex-between">
-                <div>
-                    <h1>Accounts</h1>
-                    <p>Manage checking and saving accounts.</p>
-                </div>
-           
-            </div>
-            
-            <div style="margin-bottom: 30px;">
-                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">Pending Approvals</h2>
-                @if(session('success'))
-                    <div style="background-color: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                        {{ session('success') }}
+                <div class="admin-header-right">
+                    <div class="search-box">
+                        <i class="fa-solid fa-search" style="color: #a3aed1;"></i>
+                        <input type="text" placeholder="Search anything...">
                     </div>
-                @endif
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Account No</th>
-                                <th>Customer Name</th>
-                                <th>NID</th>
-                                <th>Account Type</th>
-                                <th>Initial Balance</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pendingAccounts ?? [] as $account)
-                            <tr>
-                                <td>{{ $account->account_number }}</td>
-                                <td>{{ optional($account->user)->FULL_NAME ?? optional($account->user)->first_name ?? 'N/A' }}</td>
-                                <td>{{ optional($account->user)->NID ?? 'N/A' }}</td>
-                                <td><span class="badge pending">{{ $account->account_type }}</span></td>
-                                <td class="amount">${{ number_format($account->balance, 2) }}</td>
-                                <td>
-                                    <form action="{{ route('admin.approveAccount', $account->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn primary-btn small-btn" style="padding: 6px 12px; border-radius: 6px;"><i class="fa-solid fa-check"></i> Approve</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="6" style="text-align: center; padding: 20px;">No pending accounts</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <i class="fa-regular fa-bell" style="font-size: 1.2rem; color: #a3aed1; cursor: pointer;"></i>
+                    <div class="admin-profile">
+                        <div style="text-align: right;">
+                            <h4 style="color: #2b3674; font-size: 0.9rem; margin: 0;">{{ auth()->user()->first_name ?? 'Admin' }}</h4>
+                            <p style="color: #a3aed1; font-size: 0.75rem; margin: 0;">Super Admin</p>
+                        </div>
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Profile">
+                    </div>
                 </div>
-            </div>
+            </header>
 
-            <div>
-                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">Active Accounts</h2>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Account No</th>
-                                <th>Customer Name</th>
-                                <th>Account Type</th>
-                                <th>Balance</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($activeAccounts ?? [] as $account)
-                            <tr>
-                                <td>{{ $account->account_number }}</td>
-                                <td>{{ optional($account->user)->FULL_NAME ?? optional($account->user)->first_name ?? 'N/A' }}</td>
-                                <td><span class="badge info">{{ $account->account_type }}</span></td>
-                                <td class="amount">${{ number_format($account->balance, 2) }}</td>
-                                <td><span class="badge success">{{ $account->status }}</span></td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="5" style="text-align: center; padding: 20px;">No active accounts found</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-      
-        <section id="loans-section" class="content-section">
-            <div class="section-header flex-between">
-                <div>
-                    <h1>Loans & Payments</h1>
-                    <p>Review, approve, or reject customer loan applications.</p>
-                </div>
-            </div>
-
-            @if(session('success'))
-                <div class="alert-box success-alert">
-                    <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="alert-box error-alert">
-                    <i class="fa-solid fa-circle-xmark"></i> {{ session('error') }}
-                </div>
-            @endif
-
-            <div style="margin-bottom: 30px;">
-                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">
-                    <i class="fa-solid fa-clock" style="margin-right: 6px;"></i>Pending Loan Applications ({{ $pendingLoans->count() }})
-                </h2>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Loan ID</th>
-                                <th>Customer</th>
-                                <th>Loan Type</th>
-                                <th>Amount</th>
-                                <th>Duration</th>
-                                <th>Purpose</th>
-                                <th>Eligibility</th>
-                                <th>Applied On</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pendingLoans as $loan)
-                            <tr>
-                                <td>LN-{{ $loan->loan_id }}</td>
-                                <td>
-                                    <div>
-                                        <strong>{{ $loan->full_name }}</strong>
-                                        <br><small style="color: var(--text-muted);">{{ $loan->email }}</small>
+            <div class="admin-content">
+                
+                <!-- 01. Dashboard Section -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="grid-6">
+                        <div class="admin-stat-card"><div class="icon blue"><i class="fa-solid fa-users"></i></div><div class="info"><p>Total Customers</p><h3>{{ number_format($stats['total_customers'] ?? 12850) }}</h3></div></div>
+                        <div class="admin-stat-card"><div class="icon green"><i class="fa-solid fa-user-tie"></i></div><div class="info"><p>Total Employees</p><h3>{{ number_format($stats['total_employees'] ?? 286) }}</h3></div></div>
+                        <div class="admin-stat-card"><div class="icon purple"><i class="fa-solid fa-wallet"></i></div><div class="info"><p>Total Accounts</p><h3>{{ number_format($stats['total_accounts'] ?? 18540) }}</h3></div></div>
+                        <div class="admin-stat-card"><div class="icon green"><i class="fa-solid fa-sack-dollar"></i></div><div class="info"><p>Total Balance</p><h3>${{ number_format($stats['total_balance'] ?? 245680000, 2) }}</h3></div></div>
+                        <div class="admin-stat-card"><div class="icon red"><i class="fa-solid fa-hand-holding-dollar"></i></div><div class="info"><p>Total Loans</p><h3>{{ number_format($stats['total_loans'] ?? 5430) }}</h3></div></div>
+                        <div class="admin-stat-card"><div class="icon orange"><i class="fa-solid fa-building"></i></div><div class="info"><p>Total Branches</p><h3>{{ $stats['total_branches'] ?? 24 }}</h3></div></div>
+                    </div>
+                    <div class="charts-row-1">
+                        <div class="chart-card"><h3>Account Types Overview</h3><div class="chart-container"><canvas id="accountTypesChart"></canvas></div></div>
+                        <div class="chart-card"><h3>Loan Overview</h3><div class="chart-container"><canvas id="loanOverviewChart"></canvas></div></div>
+                        <div class="chart-card">
+                            <h3>Recent Transactions</h3>
+                            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #e8f0fe; color: #4318ff; display: flex; align-items: center; justify-content: center; font-weight: bold;">R</div>
+                                        <div><p style="margin:0; font-weight: 600; color: #2b3674; font-size: 0.9rem;">Rahim Ahmed</p><p style="margin:0; font-size: 0.8rem; color: #a3aed1;">Transfer to ACC-52584</p></div>
                                     </div>
-                                </td>
-                                <td><span class="badge info">{{ $loan->loan_type }}</span></td>
-                                <td class="amount">${{ number_format($loan->amount, 2) }}</td>
-                                <td>{{ $loan->duration_months }} months</td>
-                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $loan->purpose }}">{{ $loan->purpose ?? 'N/A' }}</td>
-                                <td>
-                                    @if(str_starts_with($loan->eligibility ?? '', 'ELIGIBLE'))
-                                        <span class="badge success"><i class="fa-solid fa-circle-check"></i> Eligible</span>
-                                    @else
-                                        <span class="badge warning" title="{{ $loan->eligibility }}"><i class="fa-solid fa-triangle-exclamation"></i> Not Eligible</span>
-                                    @endif
-                                </td>
-                                <td>{{ \Carbon\Carbon::parse($loan->created_at)->format('d M Y') }}</td>
-                                <td>
-                                    <div style="display: flex; gap: 6px;">
-                                        <form action="{{ route('admin.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="action" value="APPROVE">
-                                            <button type="submit" class="btn primary-btn small-btn" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;" onclick="return confirm('Approve this loan for ${{ number_format($loan->amount, 2) }}?')">
-                                                <i class="fa-solid fa-check"></i> Approve
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('admin.approveLoan', $loan->loan_id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="action" value="REJECT">
-                                            <button type="submit" class="btn outline small-btn" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);" onclick="return confirm('Reject this loan application?')">
-                                                <i class="fa-solid fa-xmark"></i> Reject
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="9" style="text-align: center; padding: 20px;">No pending loan applications</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-       
-      
-        <section id="deposit-section" class="content-section">
-            <div class="section-header">
-                <h1><i class="fa-solid fa-money-bill-wave" style="color: var(--success); margin-right: 10px;"></i>Deposit Money</h1>
-                <p>Process a deposit for a verified customer.</p>
-            </div>
-
-            {{-- Flash messages --}}
-            @if(session('deposit_success'))
-                <div class="alert-box success-alert">
-                    <i class="fa-solid fa-circle-check"></i> {{ session('deposit_success') }}
-                </div>
-            @endif
-            @if(session('deposit_error'))
-                <div class="alert-box error-alert">
-                    <i class="fa-solid fa-circle-xmark"></i> {{ session('deposit_error') }}
-                </div>
-            @endif
-
-            {{-- STEP 1: Search Customer --}}
-            <div id="deposit-step1" class="workflow-card">
-                <div class="step-badge">Step 1</div>
-                <h3>Search Customer</h3>
-                <p class="step-desc">Enter the customer's Account Number and NID to verify identity.</p>
-                <form id="depositSearchForm" method="POST" action="{{ route('admin.deposit.search') }}">
-                    @csrf
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Account Number</label>
-                            <input type="text" name="account_number" placeholder="e.g. ACC-100001" required>
-                        </div>
-                        <div class="form-group">
-                            <label>NID Number</label>
-                            <input type="text" name="nid" placeholder="e.g. 1234567890" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Verify Customer</button>
-                </form>
-            </div>
-
-            {{-- STEP 2 & 3: Customer Verified + Enter Amount (shown via session) --}}
-            @if(session('deposit_customer'))
-            @php $dc = session('deposit_customer'); @endphp
-            <div class="workflow-card verified-card">
-                <div class="step-badge success-badge">✓ Verified</div>
-                <h3>Customer Verified</h3>
-                <div class="customer-info-grid">
-                    <div class="info-item"><span class="info-label">Customer Name</span><span class="info-value">{{ $dc['full_name'] }}</span></div>
-                    <div class="info-item"><span class="info-label">Account No</span><span class="info-value">{{ $dc['account_number'] }}</span></div>
-                    <div class="info-item"><span class="info-label">Current Balance</span><span class="info-value amount positive">${{ number_format($dc['balance'], 2) }}</span></div>
-                </div>
-
-                <form method="POST" action="{{ route('admin.deposit.otp') }}" style="margin-top: 20px;">
-                    @csrf
-                    <input type="hidden" name="account_number" value="{{ $dc['account_number'] }}">
-                    <div class="form-group" style="max-width: 300px;">
-                        <label>Deposit Amount ($)</label>
-                        <input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" required style="font-size: 1.2rem; font-weight: 600;">
-                    </div>
-                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-paper-plane"></i> Generate OTP & Deposit</button>
-                </form>
-            </div>
-            @endif
-
-            {{-- STEP 4 & 5: OTP Verification (shown via session) --}}
-            @if(session('deposit_otp_id'))
-            <div class="workflow-card otp-card">
-                <div class="step-badge">Step 4</div>
-                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
-                <p class="step-desc">An OTP has been sent to the customer's Notifications page. Ask the customer for the code.</p>
-                <form method="POST" action="{{ route('admin.deposit.verify') }}">
-                    @csrf
-                    <input type="hidden" name="otp_id" value="{{ session('deposit_otp_id') }}">
-                    <div class="form-group" style="max-width: 250px;">
-                        <label>Enter 6-digit OTP</label>
-                        <input type="text" name="otp" maxlength="6" placeholder="______" required
-                               style="font-size: 1.8rem; text-align: center; letter-spacing: 12px; font-weight: 700;">
-                    </div>
-                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-check-double"></i> Verify OTP & Complete Deposit</button>
-                </form>
-            </div>
-            @endif
-        </section>
-
-        
-        
-        <section id="withdraw-section" class="content-section">
-            <div class="section-header">
-                <h1><i class="fa-solid fa-hand-holding-dollar" style="color: var(--warning); margin-right: 10px;"></i>Withdraw Money</h1>
-                <p>Process a withdrawal for a verified customer.</p>
-            </div>
-
-            @if(session('withdraw_success'))
-                <div class="alert-box success-alert">
-                    <i class="fa-solid fa-circle-check"></i> {{ session('withdraw_success') }}
-                </div>
-            @endif
-            @if(session('withdraw_error'))
-                <div class="alert-box error-alert">
-                    <i class="fa-solid fa-circle-xmark"></i> {{ session('withdraw_error') }}
-                </div>
-            @endif
-
-            {{-- STEP 1: Search Customer --}}
-            <div id="withdraw-step1" class="workflow-card">
-                <div class="step-badge">Step 1</div>
-                <h3>Search Customer</h3>
-                <p class="step-desc">Enter the customer's Account Number and NID to verify identity.</p>
-                <form method="POST" action="{{ route('admin.withdraw.search') }}">
-                    @csrf
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Account Number</label>
-                            <input type="text" name="account_number" placeholder="e.g. ACC-100001" required>
-                        </div>
-                        <div class="form-group">
-                            <label>NID Number</label>
-                            <input type="text" name="nid" placeholder="e.g. 1234567890" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Verify Customer</button>
-                </form>
-            </div>
-
-            @if(session('withdraw_customer'))
-            @php $wc = session('withdraw_customer'); @endphp
-            <div class="workflow-card verified-card">
-                <div class="step-badge success-badge">✓ Verified</div>
-                <h3>Customer Verified</h3>
-                <div class="customer-info-grid">
-                    <div class="info-item"><span class="info-label">Customer Name</span><span class="info-value">{{ $wc['full_name'] }}</span></div>
-                    <div class="info-item"><span class="info-label">Account No</span><span class="info-value">{{ $wc['account_number'] }}</span></div>
-                    <div class="info-item"><span class="info-label">Current Balance</span><span class="info-value amount positive">${{ number_format($wc['balance'], 2) }}</span></div>
-                </div>
-
-                <form method="POST" action="{{ route('admin.withdraw.otp') }}" style="margin-top: 20px;">
-                    @csrf
-                    <input type="hidden" name="account_number" value="{{ $wc['account_number'] }}">
-                    <div class="form-group" style="max-width: 300px;">
-                        <label>Withdrawal Amount ($)</label>
-                        <input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" max="{{ $wc['balance'] }}" required style="font-size: 1.2rem; font-weight: 600;">
-                    </div>
-                    <button type="submit" class="btn primary-btn" style="background-color: var(--warning);"><i class="fa-solid fa-paper-plane"></i> Generate OTP & Withdraw</button>
-                </form>
-            </div>
-            @endif
-
-            @if(session('withdraw_otp_id'))
-            <div class="workflow-card otp-card">
-                <div class="step-badge">Step 4</div>
-                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
-                <p class="step-desc">An OTP has been sent to the customer's Notifications page. Ask the customer for the code.</p>
-                <form method="POST" action="{{ route('admin.withdraw.verify') }}">
-                    @csrf
-                    <input type="hidden" name="otp_id" value="{{ session('withdraw_otp_id') }}">
-                    <div class="form-group" style="max-width: 250px;">
-                        <label>Enter 6-digit OTP</label>
-                        <input type="text" name="otp" maxlength="6" placeholder="______" required
-                               style="font-size: 1.8rem; text-align: center; letter-spacing: 12px; font-weight: 700;">
-                    </div>
-                    <button type="submit" class="btn primary-btn" style="background-color: var(--warning);"><i class="fa-solid fa-check-double"></i> Verify OTP & Complete Withdrawal</button>
-                </form>
-            </div>
-            @endif
-        </section>
-
-       
-    
-      
-        <section id="transfer-section" class="content-section">
-            <div class="section-header">
-                <h1><i class="fa-solid fa-right-left" style="color: var(--purple); margin-right: 10px;"></i>Money Transfer</h1>
-                <p>Transfer funds between two verified accounts.</p>
-            </div>
-
-            @if(session('transfer_success'))
-                <div class="alert-box success-alert">
-                    <i class="fa-solid fa-circle-check"></i> {{ session('transfer_success') }}
-                </div>
-            @endif
-            @if(session('transfer_error'))
-                <div class="alert-box error-alert">
-                    <i class="fa-solid fa-circle-xmark"></i> {{ session('transfer_error') }}
-                </div>
-            @endif
-
-            {{-- STEP 1: Search Source Account --}}
-            <div class="workflow-card">
-                <div class="step-badge">Step 1</div>
-                <h3>Verify Source Account</h3>
-                <p class="step-desc">Enter the sender's Account Number, NID, and the destination account.</p>
-                <form method="POST" action="{{ route('admin.transfer.search') }}">
-                    @csrf
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>From Account Number</label>
-                            <input type="text" name="from_account" placeholder="e.g. ACC-100001" required>
-                        </div>
-                        <div class="form-group">
-                            <label>NID Number (Sender)</label>
-                            <input type="text" name="nid" placeholder="e.g. 1234567890" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>To Account Number (Destination)</label>
-                        <input type="text" name="to_account" placeholder="e.g. ACC-100045" required>
-                    </div>
-                    <button type="submit" class="btn primary-btn" style="background-color: var(--purple);"><i class="fa-solid fa-magnifying-glass"></i> Verify Accounts</button>
-                </form>
-            </div>
-
-            @if(session('transfer_accounts'))
-            @php $ta = session('transfer_accounts'); @endphp
-            <div class="workflow-card verified-card">
-                <div class="step-badge success-badge">✓ Verified</div>
-                <h3>Accounts Verified</h3>
-                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center;">
-                    <div class="customer-info-grid" style="border: 1px solid var(--border); padding: 16px; border-radius: 10px;">
-                        <h4 style="color: var(--danger); margin-bottom: 8px;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sender</h4>
-                        <div class="info-item"><span class="info-label">Name</span><span class="info-value">{{ $ta['from_name'] }}</span></div>
-                        <div class="info-item"><span class="info-label">Account</span><span class="info-value">{{ $ta['from_account'] }}</span></div>
-                        <div class="info-item"><span class="info-label">Balance</span><span class="info-value amount positive">${{ number_format($ta['from_balance'], 2) }}</span></div>
-                    </div>
-                    <div style="font-size: 2rem; color: var(--purple);"><i class="fa-solid fa-arrow-right"></i></div>
-                    <div class="customer-info-grid" style="border: 1px solid var(--border); padding: 16px; border-radius: 10px;">
-                        <h4 style="color: var(--success); margin-bottom: 8px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Receiver</h4>
-                        <div class="info-item"><span class="info-label">Name</span><span class="info-value">{{ $ta['to_name'] }}</span></div>
-                        <div class="info-item"><span class="info-label">Account</span><span class="info-value">{{ $ta['to_account'] }}</span></div>
-                        <div class="info-item"><span class="info-label">Balance</span><span class="info-value amount positive">${{ number_format($ta['to_balance'], 2) }}</span></div>
-                    </div>
-                </div>
-
-                <form method="POST" action="{{ route('admin.transfer.otp') }}" style="margin-top: 20px;">
-                    @csrf
-                    <input type="hidden" name="from_account" value="{{ $ta['from_account'] }}">
-                    <input type="hidden" name="to_account" value="{{ $ta['to_account'] }}">
-                    <div class="form-group" style="max-width: 300px;">
-                        <label>Transfer Amount ($)</label>
-                        <input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" max="{{ $ta['from_balance'] }}" required style="font-size: 1.2rem; font-weight: 600;">
-                    </div>
-                    <button type="submit" class="btn primary-btn" style="background-color: var(--purple);"><i class="fa-solid fa-paper-plane"></i> Generate OTP & Transfer</button>
-                </form>
-            </div>
-            @endif
-
-            @if(session('transfer_otp_id'))
-            <div class="workflow-card otp-card">
-                <div class="step-badge">Step 4</div>
-                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 8px;"></i>OTP Verification</h3>
-                <p class="step-desc">An OTP has been sent to the sender's Notifications page. Ask the customer for the code.</p>
-                <form method="POST" action="{{ route('admin.transfer.verify') }}">
-                    @csrf
-                    <input type="hidden" name="otp_id" value="{{ session('transfer_otp_id') }}">
-                    <div class="form-group" style="max-width: 250px;">
-                        <label>Enter 6-digit OTP</label>
-                        <input type="text" name="otp" maxlength="6" placeholder="______" required
-                               style="font-size: 1.8rem; text-align: center; letter-spacing: 12px; font-weight: 700;">
-                    </div>
-                    <button type="submit" class="btn primary-btn" style="background-color: var(--purple);"><i class="fa-solid fa-check-double"></i> Verify OTP & Complete Transfer</button>
-                </form>
-            </div>
-            @endif
-        </section>
-
-      
-        <section id="profile-section" class="content-section">
-            <div class="section-header">
-                <h1>My Profile</h1>
-                <p>Manage your personal details and security settings.</p>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        
-                <div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-user-pen" style="color: var(--primary); margin-right: 8px;"></i> Edit Profile Details</h3>
-                    @if(session('profile_success'))
-                        <div style="background-color: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                            {{ session('profile_success') }}
-                        </div>
-                    @endif
-                    <form method="POST" action="/user-profile/update">
-                        @csrf
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>First Name</label>
-                                <input type="text" name="first_name" value="{{ old('first_name', auth()->user()->first_name) }}" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Last Name</label>
-                                <input type="text" name="last_name" value="{{ old('last_name', auth()->user()->last_name) }}" required>
+                                    <div style="text-align: right;"><p style="margin:0; font-weight: 600; color: #2b3674; font-size: 0.9rem;">$500.00</p><p style="margin:0; font-size: 0.8rem; color: #a3aed1;">02 Jul 2026</p></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" value="{{ auth()->user()->email }}" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
-                        </div>
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="text" name="phone" value="{{ old('phone', auth()->user()->phone) }}">
-                        </div>
-                        <div class="form-group">
-                            <label>Residential Address</label>
-                            <textarea name="address" rows="3">{{ old('address', auth()->user()->address) }}</textarea>
-                        </div>
-                        <button type="submit" class="btn primary-btn"><i class="fa-solid fa-save" style="margin-right: 8px;"></i> Save Changes</button>
-                    </form>
-                </div>
-
-             
-                <div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-shield" style="color: var(--danger); margin-right: 8px;"></i> Security Settings</h3>
-                    @if(session('password_success'))
-                        <div style="background-color: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                            {{ session('password_success') }}
-                        </div>
-                    @endif
-                    @if($errors->has('password_error'))
-                        <div style="background-color: #fee2e2; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                            {{ $errors->first('password_error') }}
-                        </div>
-                    @endif
-                    <form method="POST" action="/user-profile/password">
-                        @csrf
-                        <div class="form-group">
-                            <label>Current Password</label>
-                            <input type="password" name="current_password" placeholder="Enter current password" required>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>New Password</label>
-                                <input type="password" name="new_password" placeholder="Enter new password" required>
-                                @error('new_password')
-                                    <small style="color: #dc2626; margin-top: 4px; display: block;">{{ $message }}</small>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label>Confirm Password</label>
-                                <input type="password" name="new_password_confirmation" placeholder="Confirm new password" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn outline"><i class="fa-solid fa-key" style="margin-right: 8px;"></i> Update Password</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        @if(session('profile_success') || session('password_success') || $errors->has('password_error') || $errors->has('new_password'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                document.querySelector('[data-target="profile-section"]').classList.add('active');
-                document.getElementById('profile-section').classList.add('active');
-            });
-        </script>
-        @endif
-
-        {{-- Auto-navigate to deposit/withdraw/transfer section after form submission --}}
-        @if(session('deposit_customer') || session('deposit_otp_id') || session('deposit_success') || session('deposit_error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                document.querySelector('[data-target="deposit-section"]').classList.add('active');
-                document.getElementById('deposit-section').classList.add('active');
-            });
-        </script>
-        @endif
-
-        @if(session('withdraw_customer') || session('withdraw_otp_id') || session('withdraw_success') || session('withdraw_error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                document.querySelector('[data-target="withdraw-section"]').classList.add('active');
-                document.getElementById('withdraw-section').classList.add('active');
-            });
-        </script>
-        @endif
-
-        @if(session('transfer_accounts') || session('transfer_otp_id') || session('transfer_success') || session('transfer_error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                document.querySelector('[data-target="transfer-section"]').classList.add('active');
-                document.getElementById('transfer-section').classList.add('active');
-            });
-        </script>
-        @endif
-
-        @if(session('success') || session('error'))
-        @php
-            $msg = session('success') ?? session('error') ?? '';
-            $isLoanMsg = str_contains(strtolower($msg), 'loan');
-            $isAccountMsg = str_contains(strtolower($msg), 'account');
-        @endphp
-        @if($isLoanMsg)
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                document.querySelector('[data-target="loans-section"]').classList.add('active');
-                document.getElementById('loans-section').classList.add('active');
-            });
-        </script>
-        @elseif($isAccountMsg)
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                document.querySelector('[data-target="accounts-section"]').classList.add('active');
-                document.getElementById('accounts-section').classList.add('active');
-            });
-        </script>
-        @endif
-        @endif
-
-    </main>
-
-    
-    <div id="customerModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Add New Customer</h2>
-                <button class="close-btn" onclick="closeModal('customerModal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form class="modal-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" placeholder="e.g. John" required>
                     </div>
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" placeholder="e.g. Doe" required>
+                    <div class="charts-row-2">
+                        <div class="chart-card"><h3>Branch Distribution</h3><div class="chart-container"><canvas id="branchDistributionChart"></canvas></div></div>
+                        <div class="chart-card"><h3>Account Status</h3><div class="chart-container"><canvas id="accountStatusChart"></canvas></div></div>
+                        <div class="chart-card"><h3>Loan Status</h3><div class="chart-container"><canvas id="loanStatusChart"></canvas></div></div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Mobile Number</label>
-                    <input type="text" placeholder="e.g. (555) 000-0000" required>
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <textarea rows="3" placeholder="Full residential address" required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn outline" onclick="closeModal('customerModal')">Cancel</button>
-                    <button type="submit" class="btn primary-btn">Save Customer</button>
-                </div>
-            </form>
-        </div>
+                </section>
+
+                <!-- 02. Customers Section -->
+                <section id="customers-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Customers</h3>
+                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add Customer</button>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                                <tr><td>CUS001</td><td>Rahim Ahmed</td><td>rahim@email.com</td><td>01712345678</td><td><span class="badge badge-success">Active</span></td><td><i class="fa-solid fa-pen" style="color: #4318ff; cursor:pointer;"></i></td></tr>
+                                <tr><td>CUS002</td><td>Sumaiya Akter</td><td>sumaiya@email.com</td><td>01812345678</td><td><span class="badge badge-success">Active</span></td><td><i class="fa-solid fa-pen" style="color: #4318ff; cursor:pointer;"></i></td></tr>
+                                <tr><td>CUS003</td><td>Nusrat Jahan</td><td>nusrat@email.com</td><td>01912345678</td><td><span class="badge badge-warning">Inactive</span></td><td><i class="fa-solid fa-pen" style="color: #4318ff; cursor:pointer;"></i></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 03. Employees Section -->
+                <section id="employees-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Employees</h3>
+                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add Employee</button>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Manager</th><th>Join Date</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>EMP001</td><td>Ashikur Rahman</td><td>Manager</td><td>Admin</td><td>01 Jan 2024</td><td><span class="badge badge-success">Active</span></td></tr>
+                                <tr><td>EMP002</td><td>Farhana Islam</td><td>Officer</td><td>EMP001</td><td>15 Feb 2024</td><td><span class="badge badge-success">Active</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 04. Accounts Section -->
+                <section id="accounts-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Accounts</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>Account No.</th><th>Customer Name</th><th>Type</th><th>Balance</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>ACC-12314</td><td>Rahim Ahmed</td><td>Savings</td><td>$25,600.00</td><td><span class="badge badge-success">Active</span></td></tr>
+                                <tr><td>ACC-55284</td><td>Sumaiya Akter</td><td>Current</td><td>$15,750.00</td><td><span class="badge badge-success">Active</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- 05. Loans Section -->
+                <section id="loans-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Loans</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>Loan ID</th><th>Customer Name</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>L001</td><td>Rahim Ahmed</td><td>Personal Loan</td><td>$50,000.00</td><td><span class="badge badge-success">Active</span></td></tr>
+                                <tr><td>L002</td><td>Omar Faruk</td><td>Business Loan</td><td>$15,000.00</td><td><span class="badge badge-info">Completed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- 06. Transactions Section -->
+                <section id="transactions-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Transactions</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Date</th><th>Account No.</th><th>Type</th><th>Amount</th></tr></thead>
+                            <tbody>
+                                <tr><td>TXN1001</td><td>02 Jul 2026</td><td>ACC-12314</td><td>Deposit</td><td><span style="color: #059669; font-weight:bold;">+$850.00</span></td></tr>
+                                <tr><td>TXN1002</td><td>02 Jul 2026</td><td>ACC-55284</td><td>Withdrawal</td><td><span style="color: #ef4444; font-weight:bold;">-$1,500.00</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- 07. Transfers Section -->
+                <section id="transfers-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Transfers</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Date</th><th>From Account</th><th>To Account</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>TRF1001</td><td>02 Jul 2026</td><td>ACC-12314</td><td>ACC-52584</td><td>$500.00</td><td><span class="badge badge-success">Completed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- 08. Branches Section -->
+                <section id="branches-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Branches</h3>
+                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add Branch</button>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Branch Name</th><th>Location</th><th>Manager</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>BR001</td><td>Dhaka Main Branch</td><td>Dhaka</td><td>Ashikur Rahman</td><td><span class="badge badge-success">Active</span></td></tr>
+                                <tr><td>BR002</td><td>Chittagong Branch</td><td>Chittagong</td><td>Farhana Islam</td><td><span class="badge badge-success">Active</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- 09. Reports Section -->
+                <section id="reports-section" class="content-section">
+                    <h3 style="color: #2b3674; margin-bottom: 20px;">System Reports</h3>
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <div class="icon-box" style="background:#e8f0fe; color:#4318ff;"><i class="fa-solid fa-user-chart"></i></div>
+                                <div class="text-box"><h4>Customer Report</h4><p>View customer details and statistics</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
+                        </div>
+                        <div class="report-card">
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <div class="icon-box" style="background:#e6faf0; color:#059669;"><i class="fa-solid fa-wallet"></i></div>
+                                <div class="text-box"><h4>Account Report</h4><p>View account summary and details</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
+                        </div>
+                        <div class="report-card">
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <div class="icon-box" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                                <div class="text-box"><h4>Loan Report</h4><p>View loan statistics and details</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
+                        </div>
+                        <div class="report-card">
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <div class="icon-box" style="background:#fee2e2; color:#ef4444;"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                                <div class="text-box"><h4>Transaction Report</h4><p>View transaction summary and details</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
+                        </div>
+                        <div class="report-card">
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <div class="icon-box" style="background:#f3e8ff; color:#8b5cf6;"><i class="fa-solid fa-code-branch"></i></div>
+                                <div class="text-box"><h4>Branch Report</h4><p>View branch performance report</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
+                        </div>
+                        <div class="report-card">
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <div class="icon-box" style="background:#e0f2fe; color:#075985;"><i class="fa-solid fa-chart-line"></i></div>
+                                <div class="text-box"><h4>Financial Report</h4><p>View financial overview report</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #a3aed1;"></i>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 10. Audit Logs Section -->
+                <section id="audit-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Audit Logs</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead><tr><th>Log ID</th><th>Table Name</th><th>Action</th><th>Performed By</th><th>Date</th></tr></thead>
+                            <tbody>
+                                <tr><td>LOG1001</td><td>ACCOUNTS</td><td><span class="badge badge-success">INSERT</span></td><td>Ashikur Rahman</td><td>02 Jul 2026 10:14 AM</td></tr>
+                                <tr><td>LOG1002</td><td>LOANS</td><td><span class="badge badge-warning">UPDATE</span></td><td>Farhana Islam</td><td>02 Jul 2026 03:45 PM</td></tr>
+                                <tr><td>LOG1003</td><td>USERS</td><td><span class="badge badge-danger">DELETE</span></td><td>Super Admin</td><td>01 Jul 2026 09:20 AM</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- 11. Notifications Section -->
+                <section id="notifications-section" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Notifications</h3>
+                            <a href="#" style="color:#4318ff; text-decoration:none; font-size:0.9rem; font-weight:600;">Mark all as read</a>
+                        </div>
+                        <div style="padding: 20px 24px;">
+                            <div style="display:flex; align-items:center; gap:15px; padding:15px 0; border-bottom:1px solid #f1f5f9;">
+                                <div style="width:40px; height:40px; border-radius:50%; background:#e0f2fe; color:#075985; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-user-plus"></i></div>
+                                <div style="flex:1;"><p style="margin:0; color:#2b3674; font-weight:500;">New customer Rahim Ahmed has been registered.</p></div>
+                                <div style="color:#a3aed1; font-size:0.85rem;">2 mins ago</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:15px; padding:15px 0; border-bottom:1px solid #f1f5f9;">
+                                <div style="width:40px; height:40px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-file-signature"></i></div>
+                                <div style="flex:1;"><p style="margin:0; color:#2b3674; font-weight:500;">Loan approved for customer Sumaiya Akter.</p></div>
+                                <div style="color:#a3aed1; font-size:0.85rem;">15 mins ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 12. Settings Section -->
+                <section id="settings-section" class="content-section">
+                    <div class="table-container" style="padding: 30px;">
+                        <h3 style="color: #2b3674; margin-bottom: 20px;">General Settings</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                            <div>
+                                <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Bank Name</label>
+                                <input type="text" value="Nexus Bank Limited" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                            </div>
+                            <div>
+                                <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Currency</label>
+                                <select style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                                    <option>USD ($)</option>
+                                    <option>BDT (৳)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Time Zone</label>
+                                <select style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:'Inter'; color:#2b3674;">
+                                    <option>UTC +06:00 Dhaka</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="margin-top: 30px;">Save Changes</button>
+                    </div>
+                </section>
+                
+                <!-- 13. Profile Section -->
+                <section id="profile-section" class="content-section">
+                    <div class="table-container" style="padding: 30px; display:flex; gap:40px;">
+                        <div style="text-align:center;">
+                            <img src="https://i.pravatar.cc/150?img=11" alt="Profile" style="width:120px; height:120px; border-radius:50%; margin-bottom:15px;">
+                            <h3 style="color:#2b3674; margin:0;">Super Admin</h3>
+                            <p style="color:#a3aed1; font-size:0.9rem; margin-top:5px;">System Administrator</p>
+                            <button class="btn-primary" style="margin: 15px auto;">Edit Profile</button>
+                        </div>
+                        <div style="flex:1;">
+                            <h3 style="color: #2b3674; margin-bottom: 20px;">Profile Information</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Full Name</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">Super Admin</p></div>
+                                <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Email</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">admin@nexus.com</p></div>
+                                <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Phone</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">+880 1712 345678</p></div>
+                                <div><p style="color:#6b7a99; font-size:0.85rem; margin:0;">Role</p><p style="color:#2b3674; font-weight:500; margin-top:5px;">Admin</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
     </div>
 
-   
-    <div id="accountModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Open New Account</h2>
-                <button class="close-btn" onclick="closeModal('accountModal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form class="modal-form">
-                <div class="form-group">
-                    <label>Customer ID</label>
-                    <input type="text" placeholder="e.g. C-1001" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Account Type</label>
-                        <select required>
-                            <option value="">Select type...</option>
-                            <option value="saving">Saving</option>
-                            <option value="current">Current</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Initial Balance ($)</label>
-                        <input type="number" placeholder="0.00" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Managing Employee ID</label>
-                    <input type="text" placeholder="e.g. Emp-001" required>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn outline" onclick="closeModal('accountModal')">Cancel</button>
-                    <button type="submit" class="btn primary-btn">Open Account</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <script>
+        // JS Navigation logic
+        const navLinks = document.querySelectorAll('.nav-links li[data-target]');
+        const sections = document.querySelectorAll('.content-section');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
 
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                // Remove active class from all links
+                navLinks.forEach(l => l.classList.remove('active'));
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Hide all sections
+                sections.forEach(s => s.classList.remove('active'));
+                
+                // Show target section
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+                
+                // Update header titles based on clicked section
+                const sectionName = this.innerText.trim();
+                if(sectionName === 'Dashboard') {
+                    headerTitle.innerText = 'Admin Dashboard';
+                    headerSubtitle.innerText = 'Welcome back, Admin! Here\'s an overview of your bank.';
+                } else {
+                    headerTitle.innerText = sectionName;
+                    headerSubtitle.innerText = 'Manage ' + sectionName.toLowerCase() + ' details and records.';
+                }
+            });
+        });
 
-    <div id="loanModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Issue New Loan</h2>
-                <button class="close-btn" onclick="closeModal('loanModal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form class="modal-form">
-                <div class="form-group">
-                    <label>Customer ID</label>
-                    <input type="text" placeholder="e.g. C-1001" required>
-                </div>
-                <div class="form-group">
-                    <label>Loan Amount ($)</label>
-                    <input type="number" placeholder="0.00" required>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn outline" onclick="closeModal('loanModal')">Cancel</button>
-                    <button type="submit" class="btn primary-btn">Issue Loan</button>
-                </div>
-            </form>
-        </div>
-    </div>
+        // Chart configurations
+        const accountTypesCtx = document.getElementById('accountTypesChart').getContext('2d');
+        new Chart(accountTypesCtx, {
+            type: 'doughnut',
+            data: { labels: ['Savings', 'Current', 'Fixed Deposit', 'Others'], datasets: [{ data: [49.9, 33, 15.4, 1.7], backgroundColor: ['#4318ff', '#059669', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
+        });
 
+        const loanOverviewCtx = document.getElementById('loanOverviewChart').getContext('2d');
+        new Chart(loanOverviewCtx, {
+            type: 'doughnut',
+            data: { labels: ['Personal Loan', 'Home Loan', 'Business Loan', 'Other Loans'], datasets: [{ data: [45.1, 32.3, 17.5, 4.6], backgroundColor: ['#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
+        });
 
+        const branchDistCtx = document.getElementById('branchDistributionChart').getContext('2d');
+        new Chart(branchDistCtx, {
+            type: 'bar',
+            data: { labels: ['Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi'], datasets: [{ label: 'Branches', data: [5, 4, 3, 3, 3], backgroundColor: '#4318ff', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
 
-    <script src="script.js"></script>
+        const accountStatusCtx = document.getElementById('accountStatusChart').getContext('2d');
+        new Chart(accountStatusCtx, {
+            type: 'bar',
+            data: { labels: ['Active', 'Inactive', 'Closed', 'Frozen'], datasets: [{ label: 'Accounts', data: [15230, 1850, 980, 480], backgroundColor: ['#4318ff', '#ef4444', '#64748b', '#3b82f6'], borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        const loanStatusCtx = document.getElementById('loanStatusChart').getContext('2d');
+        new Chart(loanStatusCtx, {
+            type: 'bar',
+            data: { labels: ['Active', 'Completed', 'Closed', 'Defaulted'], datasets: [{ label: 'Loans', data: [5230, 1850, 350, 130], backgroundColor: ['#10b981', '#8b5cf6', '#64748b', '#ef4444'], borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    </script>
 </body>
 </html>

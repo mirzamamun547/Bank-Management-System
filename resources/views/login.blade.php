@@ -70,6 +70,7 @@
 
         .role-label.employee { background: #e8f0fe; color: var(--primary); }
         .role-label.customer { background: #e6faf0; color: #059669; }
+        .role-label.admin { background: #fef3c7; color: #d97706; }
 
         .center { text-align: center; }
 
@@ -162,6 +163,7 @@
         .login-btn:hover { opacity: 0.9; }
         .login-btn.employee { background: var(--primary); }
         .login-btn.customer { background: #059669; }
+        .login-btn.admin { background: #d97706; }
 
         .switch {
             text-align: center;
@@ -253,23 +255,45 @@
     </div>
 
     <script>
-        const role = new URLSearchParams(window.location.search).get('role') || 'employee';
-        const isEmp = role === 'employee';
+        let role = new URLSearchParams(window.location.search).get('role') || 'employee';
+        if (!['employee', 'customer', 'admin'].includes(role)) {
+            role = 'employee';
+        }
 
-        document.getElementById('roleLabel').textContent = isEmp ? 'Employee Login' : 'Customer Login';
-        document.getElementById('roleLabel').classList.add(isEmp ? 'employee' : 'customer');
-        document.getElementById('idLabel').textContent = isEmp ? 'Employee ID or Email' : 'NID or Customer ID';
-        document.getElementById('loginId').placeholder = isEmp ? 'Enter your employee ID or email' : 'Enter your NID or Customer ID';
+        let displayRole = 'Employee';
+        let idLabelText = 'Employee ID or Email';
+        let idPlaceholderText = 'Enter your employee ID or email';
+        let switchHtml = '';
+
+        if (role === 'customer') {
+            displayRole = 'Customer';
+            idLabelText = 'NID or Customer ID';
+            idPlaceholderText = 'Enter your NID or Customer ID';
+            switchHtml = 'Are you an employee? <a href="login?role=employee">Login here</a> | Are you an admin? <a href="login?role=admin">Login here</a><br><div style="margin-top: 10px;">Don\'t have an account? <a href="signup">Sign up here</a></div>';
+        } else if (role === 'admin') {
+            displayRole = 'Admin';
+            idLabelText = 'Admin Email or ID';
+            idPlaceholderText = 'Enter your admin email or ID';
+            switchHtml = 'Are you a customer? <a href="login?role=customer">Login here</a> | Are you an employee? <a href="login?role=employee">Login here</a>';
+        } else {
+            displayRole = 'Employee';
+            idLabelText = 'Employee ID or Email';
+            idPlaceholderText = 'Enter your employee ID or email';
+            switchHtml = 'Are you a customer? <a href="login?role=customer">Login here</a> | Are you an admin? <a href="login?role=admin">Login here</a>';
+        }
+
+        document.getElementById('roleLabel').textContent = displayRole + ' Login';
+        document.getElementById('roleLabel').classList.add(role);
+        document.getElementById('idLabel').textContent = idLabelText;
+        document.getElementById('loginId').placeholder = idPlaceholderText;
         document.getElementById('loginId').name = 'loginId';
         document.getElementById('loginPassword').name = 'password';
-        document.getElementById('expectedRole').value = isEmp ? 'employee' : 'customer';
-        document.getElementById('submitBtn').classList.add(isEmp ? 'employee' : 'customer');
+        document.getElementById('expectedRole').value = role;
+        document.getElementById('submitBtn').classList.add(role);
         
-        document.getElementById('switchRole').innerHTML = isEmp
-            ? 'Are you a customer? <a href="login?role=customer">Login here</a>'
-            : 'Are you an employee? <a href="login?role=employee">Login here</a><br><div style="margin-top: 10px;">Don\'t have an account? <a href="signup">Sign up here</a></div>';
+        document.getElementById('switchRole').innerHTML = switchHtml;
         
-        document.title = 'Nexus Bank - ' + (isEmp ? 'Employee Login' : 'Customer Login');
+        document.title = 'Nexus Bank - ' + displayRole + ' Login';
 
         // Password toggle
         document.getElementById('togglePw').addEventListener('click', () => {

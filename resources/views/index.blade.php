@@ -32,7 +32,14 @@
                         <div class="dropdown-item-icon employee-icon"><i class="fa-solid fa-user-tie"></i></div>
                         <div class="dropdown-item-text">
                             <span class="dropdown-item-title">Employee</span>
-                            <span class="dropdown-item-desc">Staff & Admin portal</span>
+                            <span class="dropdown-item-desc">Staff portal</span>
+                        </div>
+                    </a>
+                    <a href="/login?role=admin" class="dropdown-item">
+                        <div class="dropdown-item-icon admin-icon" style="background: #fef3c7; color: #d97706;"><i class="fa-solid fa-user-shield"></i></div>
+                        <div class="dropdown-item-text">
+                            <span class="dropdown-item-title">Admin</span>
+                            <span class="dropdown-item-desc">System administration</span>
                         </div>
                     </a>
                     <a href="/login?role=customer" class="dropdown-item">
@@ -190,7 +197,7 @@
                     <div class="role-icon"><i class="fa-solid fa-user-shield"></i></div>
                     <h3>Admin Dashboard</h3>
                     <p>System configuration, branch management, and analytics.</p>
-                    <a href="/login?role=employee" class="cta-btn primary btn-sm">Login as Admin</a>
+                    <a href="/login?role=admin" class="cta-btn primary btn-sm">Login as Admin</a>
                 </div>
             </div>
         </div>
