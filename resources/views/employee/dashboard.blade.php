@@ -242,7 +242,7 @@
                                 <td><span class="badge pending">{{ $account->account_type }}</span></td>
                                 <td class="amount">${{ number_format($account->balance, 2) }}</td>
                                 <td>
-                                    <form action="{{ route('admin.approveAccount', $account->id) }}" method="POST" style="display:inline;">
+                                    <form action="{{ route('employee.approveAccount', $account->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         <button type="submit" class="btn primary-btn small-btn" style="padding: 6px 12px; border-radius: 6px;"><i class="fa-solid fa-check"></i> Approve</button>
                                     </form>

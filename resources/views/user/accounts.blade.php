@@ -182,6 +182,15 @@
                         </div>
                     </div>
 
+                    <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
+                        <label style="font-weight: bold;">Select Branch</label>
+                        <select name="branch_id" required style="background: #f1f3f5; border: none; padding: 8px 12px; border-radius: 4px; width: 100%; border: 1px solid #ccc;">
+                            @foreach($branches as $b)
+                                <option value="{{ $b->branch_id }}">{{ $b->branch_name }} ({{ $b->location }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 140px 1fr 140px 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
                         <label style="font-weight: bold;">Customer ID</label>
                         <input type="text" value="HED{{ str_pad(auth()->id() ?? random_int(100, 999), 11, '0', STR_PAD_LEFT) }}" readonly style="background: #e9ecef; border: none; padding: 8px 12px; border-radius: 4px; width: 100%;">

@@ -69,8 +69,9 @@ class UserController extends Controller
         }
 
         $accounts = $query->get();
+        $branches = \Illuminate\Support\Facades\DB::table('branches')->where('status', 'ACTIVE')->get();
 
-        return view('user.accounts', compact('accounts'));
+        return view('user.accounts', compact('accounts', 'branches'));
     }
 
     public function storeAccount(Request $request)
@@ -78,6 +79,7 @@ class UserController extends Controller
         $request->validate([
             'account_type' => 'required|string|in:Saving,Current,FD',
             'opening_balance' => 'required|numeric|min:0',
+            'branch_id' => 'required|integer',
             'father_name' => 'nullable|string|max:100',
             'mother_name' => 'nullable|string|max:100',
             'gender' => 'nullable|string|in:Male,Female,Transgender',
@@ -126,12 +128,16 @@ class UserController extends Controller
             $account_number = 'ACC-' . random_int(10000, 99999);
         }
 
+        $branchObj = \Illuminate\Support\Facades\DB::table('branches')->where('branch_id', $request->branch_id)->first();
+        $branchName = $branchObj ? $branchObj->branch_name : 'Central Branch';
+
         $user->accounts()->create([
             'account_number' => $account_number,
             'account_type' => $mappedType,
             'balance' => $request->opening_balance,
             'status' => 'Pending',
-            'branch' => 'Central Branch',
+            'branch' => $branchName,
+            'branch_id' => $request->branch_id,
         ]);
 
         return back()->with('success', 'Account application submitted successfully! It is pending approval.');
