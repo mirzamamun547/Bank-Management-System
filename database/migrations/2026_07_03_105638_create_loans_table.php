@@ -36,8 +36,16 @@ return new class extends Migration
                 p_purpose IN VARCHAR2
             ) AS
                 v_installment NUMBER;
+                v_loan_interest NUMBER;
             BEGIN
-                v_installment := (p_amount / p_duration_months) * 1.05;
+                BEGIN
+                    SELECT TO_NUMBER(settings_value) INTO v_loan_interest
+                    FROM system_settings WHERE settings_key = 'LOAN_INTEREST';
+                EXCEPTION
+                    WHEN NO_DATA_FOUND THEN v_loan_interest := 8.5;
+                END;
+
+                v_installment := (p_amount * (1 + (v_loan_interest / 100))) / p_duration_months;
                 
                 INSERT INTO loans (
                     user_id,

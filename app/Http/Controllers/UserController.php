@@ -71,8 +71,9 @@ class UserController extends Controller
 
         $accounts = $query->get();
         $branches = \Illuminate\Support\Facades\DB::table('branches')->where('status', 'ACTIVE')->get();
+        $settings = \Illuminate\Support\Facades\DB::table('system_settings')->pluck('settings_value', 'settings_key')->toArray();
 
-        return view('user.accounts', compact('accounts', 'branches'));
+        return view('user.accounts', compact('accounts', 'branches', 'settings'));
     }
 
     public function storeAccount(Request $request)
@@ -289,8 +290,9 @@ class UserController extends Controller
         $user = Auth::user();
         $loans = $user->loans()->orderBy('created_at', 'desc')->get();
         $accounts = $user->accounts()->where('status', 'Active')->get();
+        $settings = \Illuminate\Support\Facades\DB::table('system_settings')->pluck('settings_value', 'settings_key')->toArray();
         
-        return view('user.loan', compact('loans', 'accounts'));
+        return view('user.loan', compact('loans', 'accounts', 'settings'));
     }
 
     public function applyLoan(Request $request)

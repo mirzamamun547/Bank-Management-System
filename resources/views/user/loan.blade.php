@@ -129,6 +129,11 @@
                         <div class="panel-header">
                             <h3><i class="fa-solid fa-file-signature" style="color: var(--accent); margin-right: 8px;"></i> Apply for a Loan</h3>
                         </div>
+                        <div style="background: rgba(67, 24, 255, 0.05); border: 1px solid rgba(67, 24, 255, 0.2); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-main);">Current Loan Interest Rate:</span>
+                            <span style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">{{ $settings['LOAN_INTEREST'] ?? '8.5' }}%</span>
+                        </div>
+                        <input type="hidden" id="loanInterestRate" value="{{ $settings['LOAN_INTEREST'] ?? '8.5' }}">
                         <form action="{{ route('user.loan.apply') }}" method="POST">
                             @csrf
                             <div class="form-group">
@@ -142,11 +147,11 @@
                             </div>
                             <div class="form-group">
                                 <label>Amount Needed ($)</label>
-                                <input type="number" name="amount" class="form-control" placeholder="0.00" min="500" required>
+                                <input type="number" id="loanAmount" name="amount" class="form-control" placeholder="0.00" min="500" required>
                             </div>
                             <div class="form-group">
                                 <label>Duration (Months)</label>
-                                <select name="duration_months" class="form-control" required>
+                                <select id="loanDuration" name="duration_months" class="form-control" required>
                                     <option value="12">12 Months</option>
                                     <option value="24">24 Months</option>
                                     <option value="36">36 Months</option>
@@ -158,6 +163,19 @@
                                 <label>Purpose of Loan</label>
                                 <textarea name="purpose" class="form-control" rows="3" placeholder="Briefly explain the reason for the loan"></textarea>
                             </div>
+
+                            <!-- Live EMI calculator preview -->
+                            <div id="emiPreviewBox" style="display: none; background: #f8fafc; border: 1px dashed var(--border); padding: 12px 16px; border-radius: 8px; margin-top: 16px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 4px;">
+                                    <span>Estimated Monthly Installment (EMI):</span>
+                                    <strong style="color: var(--accent); font-size: 1.05rem;" id="emiPreviewValue">$0.00</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                                    <span>Total Repayment (Principal + Interest):</span>
+                                    <span id="totalRepaymentValue">$0.00</span>
+                                </div>
+                            </div>
+
                             <button type="submit" class="btn-accent" style="margin-top: 16px;">
                                 Apply for Loan
                             </button>
@@ -232,5 +250,37 @@
     </div>
 
     <script src="user-script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loanAmountInput = document.getElementById('loanAmount');
+            const loanDurationSelect = document.getElementById('loanDuration');
+            const loanInterestRateInput = document.getElementById('loanInterestRate');
+            const emiPreviewBox = document.getElementById('emiPreviewBox');
+            const emiPreviewValue = document.getElementById('emiPreviewValue');
+            const totalRepaymentValue = document.getElementById('totalRepaymentValue');
+
+            function calculateEmi() {
+                const amount = parseFloat(loanAmountInput.value);
+                const months = parseInt(loanDurationSelect.value);
+                const interestRate = parseFloat(loanInterestRateInput.value);
+
+                if (isNaN(amount) || amount <= 0 || isNaN(months) || months <= 0) {
+                    emiPreviewBox.style.display = 'none';
+                    return;
+                }
+
+                // Formula: EMI = (Amount * (1 + InterestRate/100)) / Duration
+                const totalRepayment = amount * (1 + (interestRate / 100));
+                const emi = totalRepayment / months;
+
+                emiPreviewValue.textContent = '$' + emi.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                totalRepaymentValue.textContent = '$' + totalRepayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                emiPreviewBox.style.display = 'block';
+            }
+
+            loanAmountInput.addEventListener('input', calculateEmi);
+            loanDurationSelect.addEventListener('change', calculateEmi);
+        });
+    </script>
 </body>
 </html>

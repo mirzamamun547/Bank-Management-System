@@ -176,10 +176,18 @@
                     <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
                         <label style="font-weight: bold;">Account Type</label>
                         <div style="display: flex; gap: 24px;">
-                            <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="account_type" value="Saving" required checked> Saving</label>
-                            <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="account_type" value="Current" required> Current</label>
-                            <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="account_type" value="FD" required> FD</label>
+                            <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="account_type" value="Saving" required checked onclick="updateInterestDisclosure()"> Saving</label>
+                            <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="account_type" value="Current" required onclick="updateInterestDisclosure()"> Current</label>
+                            <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="account_type" value="FD" required onclick="updateInterestDisclosure()"> FD</label>
                         </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
+                        <label></label>
+                        <div id="interestDisclosure" style="font-size: 0.85rem; color: var(--accent); font-weight: 500; background: rgba(67, 24, 255, 0.05); padding: 8px 12px; border-radius: 6px; display: inline-block;">
+                            Savings Account: Pays {{ $settings['INTEREST_RATE'] ?? '5.0' }}% dynamic interest rate annually.
+                        </div>
+                        <input type="hidden" id="rawInterestRate" value="{{ $settings['INTEREST_RATE'] ?? '5.0' }}">
                     </div>
 
                     <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
@@ -257,5 +265,30 @@
     </div>
 
     <script src="user-script.js"></script>
+    <script>
+        function updateInterestDisclosure() {
+            const types = document.getElementsByName('account_type');
+            let selectedType = 'Saving';
+            for (let t of types) {
+                if (t.checked) {
+                    selectedType = t.value;
+                    break;
+                }
+            }
+            
+            const rawRate = parseFloat(document.getElementById('rawInterestRate').value);
+            const label = document.getElementById('interestDisclosure');
+
+            if (selectedType === 'Saving') {
+                label.style.display = 'inline-block';
+                label.textContent = `Savings Account: Pays ${rawRate}% dynamic interest rate annually.`;
+            } else if (selectedType === 'FD') {
+                label.style.display = 'inline-block';
+                label.textContent = `Fixed Deposit: Pays premium ${rawRate + 2}% dynamic interest rate.`;
+            } else {
+                label.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
