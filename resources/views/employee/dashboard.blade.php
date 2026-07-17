@@ -415,6 +415,52 @@
                     </table>
                 </div>
             </div>
+
+            <div>
+                <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary);">
+                    <i class="fa-solid fa-file-invoice-dollar" style="margin-right: 6px;"></i>All Loan Transactions
+                </h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction ID</th>
+                                <th>Account No</th>
+                                <th>Customer</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($loanTransactions as $txn)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($txn->created_at)->format('d M Y, H:i') }}</td>
+                                <td>TXN-{{ $txn->id }}</td>
+                                <td>{{ $txn->account_number }}</td>
+                                <td>{{ $txn->first_name }} {{ $txn->last_name }}</td>
+                                <td>
+                                    @if($txn->transaction_type == 'LOAN_PAYMENT')
+                                        <span class="badge success">EMI Payment</span>
+                                    @else
+                                        <span class="badge info">Disbursement</span>
+                                    @endif
+                                </td>
+                                <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $txn->description }}">
+                                    {{ $txn->description }}
+                                </td>
+                                <td class="amount {{ $txn->transaction_type == 'LOAN_DISBURSEMENT' ? 'positive' : 'negative' }}">
+                                    {{ $txn->transaction_type == 'LOAN_DISBURSEMENT' ? '+' : '-' }}${{ number_format($txn->amount, 2) }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="7" style="text-align: center; padding: 20px;">No loan transactions found</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
        

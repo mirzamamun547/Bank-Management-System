@@ -73,6 +73,27 @@ class EmployeeController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // ── Loan Transactions ────────────────────────────────────────────────
+        $loanTransactions = DB::table('transactions')
+            ->join('accounts', 'transactions.account_id', '=', 'accounts.id')
+            ->join('USERS', 'accounts.user_id', '=', 'USERS.id')
+            ->select(
+                'transactions.id',
+                'transactions.transaction_type',
+                'transactions.amount',
+                'transactions.description',
+                'transactions.created_at',
+                'accounts.account_number',
+                'USERS.first_name',
+                'USERS.last_name'
+            )
+            ->whereIn('transactions.transaction_type', ['LOAN_PAYMENT', 'LOAN_DISBURSEMENT']);
+
+        if ($branchId) {
+            $loanTransactions->where('accounts.branch_id', $branchId);
+        }
+        $loanTransactions = $loanTransactions->orderBy('transactions.created_at', 'desc')->get();
+
         // ── Dashboard Stats ───────────────────────────────────────────────────
         $accountsBase = DB::table('accounts');
         if ($branchId) {
@@ -126,7 +147,7 @@ class EmployeeController extends Controller
 
         return view('employee.dashboard', compact(
             'pendingAccounts', 'activeAccounts', 'customers', 'pendingLoans',
-            'notifications', 'stats', 'recentTransactions', 'branchName'
+            'notifications', 'stats', 'recentTransactions', 'branchName', 'loanTransactions'
         ));
     }
 

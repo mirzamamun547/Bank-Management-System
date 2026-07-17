@@ -118,6 +118,9 @@ return new class extends Migration
                     CURRENT_TIMESTAMP,
                     CURRENT_TIMESTAMP
                 );
+
+                INSERT INTO audit_log (table_name, action, performed_by, details, created_at, updated_at)
+                VALUES ('loans', 'UPDATE', 'SYSTEM', 'EMI Payment of ' || p_emi_amount || ' for Loan ID: ' || p_loan_id || '. Remaining: ' || v_remaining_amount, SYSDATE, SYSDATE);
                 
                 INSERT INTO notifications (
                     user_id,
