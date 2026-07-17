@@ -10,6 +10,7 @@ BEGIN
             a.account_number,
             a.balance,
             a.user_id,
+            a.branch_id,
             u.full_name,
             u.nid
         FROM accounts a

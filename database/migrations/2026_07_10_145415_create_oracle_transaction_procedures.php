@@ -20,6 +20,7 @@ return new class extends Migration
                         a.account_number,
                         a.balance,
                         a.status,
+                        a.branch_id,
                         u.id AS user_id,
                         u.customer_id,
                         u.first_name || ' ' || u.last_name AS full_name,
@@ -190,12 +191,14 @@ return new class extends Migration
                 v_from_id       accounts.id%TYPE;
                 v_from_user_id  accounts.user_id%TYPE;
                 v_from_balance  accounts.balance%TYPE;
+                v_from_branch   accounts.branch%TYPE;
                 v_to_id         accounts.id%TYPE;
                 v_to_user_id    accounts.user_id%TYPE;
+                v_to_branch     accounts.branch%TYPE;
             BEGIN
                 -- Validate Sender
-                SELECT a.id, a.user_id, a.balance
-                INTO   v_from_id, v_from_user_id, v_from_balance
+                SELECT a.id, a.user_id, a.balance, a.branch
+                INTO   v_from_id, v_from_user_id, v_from_balance, v_from_branch
                 FROM   accounts a
                 WHERE  a.account_number = p_from_account
                 AND    UPPER(a.status)  = 'ACTIVE';
@@ -205,8 +208,8 @@ return new class extends Migration
                 END IF;
 
                 -- Validate Receiver
-                SELECT a.id, a.user_id
-                INTO   v_to_id, v_to_user_id
+                SELECT a.id, a.user_id, a.branch
+                INTO   v_to_id, v_to_user_id, v_to_branch
                 FROM   accounts a
                 WHERE  a.account_number = p_to_account
                 AND    UPPER(a.status)  = 'ACTIVE';
@@ -242,7 +245,7 @@ return new class extends Migration
                     'accounts',
                     'TRANSFER',
                     p_performed_by,
-                    'Transferred $' || TO_CHAR(p_amount, 'FM999999990.00') || ' from ' || p_from_account || ' to ' || p_to_account,
+                    'Transferred $' || TO_CHAR(p_amount, 'FM999999990.00') || ' from ' || p_from_account || ' (' || v_from_branch || ') to ' || p_to_account || ' (' || v_to_branch || ')',
                     CURRENT_TIMESTAMP,
                     CURRENT_TIMESTAMP
                 );

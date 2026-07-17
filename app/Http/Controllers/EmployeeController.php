@@ -25,6 +25,8 @@ class EmployeeController extends Controller
         }
 
         $pendingAccounts = $pendingAccountsQuery->get();
+        // Fetch notifications for the logged-in employee
+        $notifications = DB::table('notifications')->where('user_id', auth()->id())->orderBy('created_at', 'desc')->get();
         $activeAccounts  = $activeAccountsQuery->get();
 
         // Customers: only those who have at least one account in this branch
@@ -74,7 +76,7 @@ class EmployeeController extends Controller
             }
         }
 
-        return view('employee.dashboard', compact('pendingAccounts', 'activeAccounts', 'customers', 'pendingLoans'));
+        return view('employee.dashboard', compact('pendingAccounts', 'activeAccounts', 'customers', 'pendingLoans', 'notifications'));
     }
 
     public function editCustomer($id)
@@ -161,9 +163,16 @@ class EmployeeController extends Controller
         if (!$loanRecord) {
             return back()->with('error', 'Loan not found.');
         }
-        $account = Account::find($loanRecord->account_id);
-        if ($employee && $employee->branch_id && $account && $account->branch_id != $employee->branch_id) {
-            return back()->with('error', 'You are not authorized to approve this loan.');
+        $loanRecord = (object) array_change_key_case((array) $loanRecord, CASE_LOWER);
+        if ($employee && $employee->branch_id) {
+            $hasAccountInBranch = DB::table('accounts')
+                ->where('user_id', $loanRecord->user_id)
+                ->where('branch_id', $employee->branch_id)
+                ->where('status', '!=', 'Pending')
+                ->exists();
+            if (!$hasAccountInBranch) {
+                return back()->with('error', 'You are not authorized to approve this loan.');
+            }
         }
 
         try {
@@ -190,7 +199,7 @@ class EmployeeController extends Controller
    
 
     // Oracle FIND_ACTIVE_ACCOUNT Function Call
-    private function findActiveAccount(string $accountNumber)
+    private function findActiveAccount(string $accountNumber, bool $checkBranch = true)
     {
         $pdo  = DB::getPdo();
         $stmt = $pdo->prepare("
@@ -216,9 +225,14 @@ class EmployeeController extends Controller
         oci_free_statement($cursor);
 
         $account = $rows[0] ?? null;
+        if ($account && !isset($account->branch_id)) {
+            $account->branch_id = DB::table('accounts')
+                ->where('id', $account->account_id)
+                ->value('branch_id');
+        }
         // Branch restriction: only allow if employee's branch matches account's branch
         $employee = auth()->user();
-        if ($employee && $employee->branch_id && $account && isset($account->branch_id)) {
+        if ($checkBranch && $employee && $employee->branch_id && $account && isset($account->branch_id)) {
             if ($account->branch_id != $employee->branch_id) {
                 // Return null to indicate unauthorized access
                 return null;
@@ -471,7 +485,7 @@ public function withdrawVerifyOtp(Request $request)
         if (!$fromAccount || strtolower($fromAccount->nid) !== strtolower($request->nid)) {
             return redirect('/employee-dashboard')->with('transfer_error', ' Source account validation failed. Check Account Number or NID.');
         }
-        $toAccount = $this->findActiveAccount($request->to_account);
+        $toAccount = $this->findActiveAccount($request->to_account, false);
         if (!$toAccount) {
             return redirect('/employee-dashboard')->with('transfer_error', 'Destination account not found or inactive.');
         }
@@ -490,7 +504,7 @@ public function withdrawVerifyOtp(Request $request)
     {
         $request->validate(['from_account' => 'required|string', 'to_account' => 'required|string', 'amount' => 'required|numeric|min:0.01']);
         $fromAccount = $this->findActiveAccount($request->from_account);
-        $toAccount   = $this->findActiveAccount($request->to_account);
+        $toAccount   = $this->findActiveAccount($request->to_account, false);
         // Branch restriction: ensure employee only initiates transfer from an account in their branch
         $employee = auth()->user();
         if ($employee && $employee->branch_id && $fromAccount && $fromAccount->branch_id != $employee->branch_id) {
@@ -500,7 +514,7 @@ public function withdrawVerifyOtp(Request $request)
             return redirect('/employee-dashboard')->with('transfer_error', ' Insufficient balance in source account.');
         }
         if (!$toAccount) {
-            return redirect('/employee/dashboard')->with('transfer_error', ' Destination account not found.');
+            return redirect('/employee-dashboard')->with('transfer_error', ' Destination account not found.');
         }
         $otp   = $this->generateOtp();
         $otpId = DB::table('otp_verification')->insertGetId([
@@ -566,9 +580,9 @@ public function withdrawVerifyOtp(Request $request)
             DB::table('otp_verification')->where('id', $record->id)->delete();
 
         } catch (\Exception $e) {
-            return redirect('/dashboard')->with('transfer_error', ' Transfer failed: ' . $e->getMessage());
+            return redirect('/employee-dashboard')->with('transfer_error', ' Transfer failed: ' . $e->getMessage());
         }
 
-        return redirect('/dashboard')->with('transfer_success', ' Transfer of $' . number_format($record->amount, 2) . ' completed successfully!');
+        return redirect('/employee-dashboard')->with('transfer_success', ' Transfer of $' . number_format($record->amount, 2) . ' completed successfully!');
     }
 }

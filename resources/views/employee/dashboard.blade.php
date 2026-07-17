@@ -25,6 +25,7 @@
             <li data-target="withdraw-section"><i class="fa-solid fa-hand-holding-dollar"></i> Withdraw Money</li>
             <li data-target="transfer-section"><i class="fa-solid fa-right-left"></i> Money Transfer</li>
             <li data-target="profile-section"><i class="fa-solid fa-user"></i> My Profile</li>
+                <li data-target="notifications-section"><i class="fa-regular fa-bell"></i> Notifications</li>
         </ul>
         <div class="user-profile">
             <img src="https://i.pravatar.cc/150?img=11" alt="Admin Profile">
@@ -33,6 +34,10 @@
                 <p>Role: {{ ucfirst(strtolower(auth()->user()->role ?? 'Admin')) }}</p>
             </div>
         </div>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="margin-top: 20px;">
+                    @csrf
+                    <button type="submit" class="btn outline"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </form>
     </nav>
 
    
@@ -134,7 +139,7 @@
                     <h1>Customers</h1>
                     <p>Manage bank customers and their personal details.</p>
                 </div>
-                <button class="btn primary-btn" onclick="openModal('customerModal')"><i class="fa-solid fa-plus"></i> Add Customer</button>
+
             </div>
             
             <div class="table-container">
@@ -720,6 +725,24 @@
                         <button type="submit" class="btn outline"><i class="fa-solid fa-key" style="margin-right: 8px;"></i> Update Password</button>
                     </form>
                 </div>
+            </div>
+        </section>
+        
+        <!-- Notifications Section -->
+        <section id="notifications-section" class="content-section">
+            <div class="section-header">
+                <h1>Notifications</h1>
+                <p>Your recent notifications.</p>
+            </div>
+            <div class="table-container">
+                @forelse($notifications as $note)
+                <div class="notification-item" style="padding: 12px; border-bottom: 1px solid var(--border);">
+                    <p style="margin: 0;">{{ $note->message }}</p>
+                    <small style="color: var(--text-muted);">{{ \Carbon\Carbon::parse($note->created_at)->diffForHumans() }}</small>
+                </div>
+                @empty
+                <p>No notifications.</p>
+                @endforelse
             </div>
         </section>
 

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -233,19 +234,49 @@ class UserController extends Controller
     public function indexTransactions(Request $request)
     {
         $user = Auth::user();
-        $accounts = $user->accounts()->pluck('id')->toArray();
+        $userAccounts = $user->accounts()->get();
+        $accountIds   = $userAccounts->pluck('id')->toArray();
 
         $query = \Illuminate\Support\Facades\DB::table('transactions')
-                    ->whereIn('account_id', $accounts)
-                    ->orderBy('created_at', 'desc');
+            ->join('accounts', 'transactions.account_id', '=', 'accounts.id')
+            ->select(
+                'transactions.id',
+                'transactions.transaction_type',
+                'transactions.amount',
+                'transactions.description',
+                'transactions.created_at',
+                'accounts.account_number',
+                'accounts.branch'
+            )
+            ->whereIn('transactions.account_id', $accountIds)
+            ->orderBy('transactions.created_at', 'desc');
 
+        // Filter by transaction type
         if ($request->filled('type') && $request->type !== 'All') {
-            $query->where('transaction_type', $request->type);
+            $query->where('transactions.transaction_type', strtoupper($request->type));
         }
 
-        $transactions = $query->get();
+        // Filter by from-date
+        if ($request->filled('from_date')) {
+            $query->whereDate('transactions.created_at', '>=', $request->from_date);
+        }
 
-        return view('user.transactions', compact('transactions'));
+        // Filter by to-date
+        if ($request->filled('to_date')) {
+            $query->whereDate('transactions.created_at', '<=', $request->to_date);
+        }
+
+        $transactions = $query->paginate(15)->withQueryString();
+        $totalCredit  = \Illuminate\Support\Facades\DB::table('transactions')
+            ->whereIn('account_id', $accountIds)
+            ->whereIn('transaction_type', ['DEPOSIT', 'TRANSFER_IN'])
+            ->sum('amount');
+        $totalDebit   = \Illuminate\Support\Facades\DB::table('transactions')
+            ->whereIn('account_id', $accountIds)
+            ->whereIn('transaction_type', ['WITHDRAWAL', 'TRANSFER_OUT', 'LOAN_EMI'])
+            ->sum('amount');
+
+        return view('user.transactions', compact('transactions', 'userAccounts', 'totalCredit', 'totalDebit'));
     }
 
     public function indexLoans()
@@ -279,6 +310,22 @@ class UserController extends Controller
                 'purpose' => $request->purpose
             ]);
 
+            // Insert notification for all employees
+            $employeeIds = DB::table('users')->where('role', 'EMPLOYEE')->pluck('id')->toArray();
+            $now = now();
+            $rows = [];
+            foreach ($employeeIds as $empId) {
+                $rows[] = [
+                    'user_id'    => $empId,
+                    'message'    => "Customer {$user->full_name} submitted a new loan request (₹" . number_format($request->amount, 2) . ").",
+                    'is_read'    => 0,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+            if (!empty($rows)) {
+                DB::table('notifications')->insert($rows);
+            }
             return back()->with('success', 'Loan application submitted successfully.');
         } catch (\Exception $e) {
             $errorMsg = $e->getMessage();
