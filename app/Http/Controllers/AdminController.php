@@ -178,7 +178,7 @@ class AdminController extends Controller
         $type = $request->input('type');
         $status = $request->input('status');
 
-        $query = Account::with(['user', 'branch']);
+        $query = Account::with(['user', 'branchInfo']);
 
         if ($search) {
             $query->where(function($q) use ($search) {

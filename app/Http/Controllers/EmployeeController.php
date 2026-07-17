@@ -13,9 +13,9 @@ class EmployeeController extends Controller
     public function dashboard()
     {
         $employee   = auth()->user();
-        $branchId   = $employee->branch_id; // Employee's branch
+        $branchId   = $employee->branch_id;
 
-        // Pending accounts: only from this branch (if branch assigned), else all
+        // ── Pending accounts: only from this branch ──────────────────────────
         $pendingAccountsQuery = Account::with('user')->where('status', 'Pending');
         $activeAccountsQuery  = Account::with('user')->where('status', '!=', 'Pending');
 
@@ -25,11 +25,9 @@ class EmployeeController extends Controller
         }
 
         $pendingAccounts = $pendingAccountsQuery->get();
-        // Fetch notifications for the logged-in employee
-        $notifications = DB::table('notifications')->where('user_id', auth()->id())->orderBy('created_at', 'desc')->get();
         $activeAccounts  = $activeAccountsQuery->get();
 
-        // Customers: only those who have at least one account in this branch
+        // ── Customers with accounts in this branch ────────────────────────────
         $customersQuery = DB::table('USERS')
             ->select('USERS.id', 'USERS.customer_id', 'USERS.first_name', 'USERS.last_name', 'USERS.phone', 'USERS.address')
             ->where('USERS.role', 'CUSTOMER')
@@ -46,15 +44,8 @@ class EmployeeController extends Controller
 
         $customers = $customersQuery->get();
 
-        // Pending loans from PENDING_LOANS view; filter by branch
-        $pendingLoansQuery = DB::table('PENDING_LOANS')
-            ->join('accounts', 'accounts.user_id', '=', 'PENDING_LOANS.user_id');
-
-        if ($branchId) {
-            $pendingLoansQuery->where('accounts.branch_id', $branchId);
-        }
-
-        $pendingLoans = DB::table('PENDING_LOANS')->get(); // fallback: show all if no branch filter needed
+        // ── Pending loans filtered by branch ─────────────────────────────────
+        $pendingLoans = DB::table('PENDING_LOANS')->get();
         if ($branchId) {
             $branchUserIds = $activeAccounts->pluck('user_id')->unique()->toArray();
             $pendingLoans = DB::table('PENDING_LOANS')
@@ -72,11 +63,71 @@ class EmployeeController extends Controller
                 $stmt->execute();
                 $loan->eligibility = $eligibility;
             } catch (\Exception $e) {
-                $loan->eligibility = 'ELIGIBLE'; // fallback
+                $loan->eligibility = 'ELIGIBLE';
             }
         }
 
-        return view('employee.dashboard', compact('pendingAccounts', 'activeAccounts', 'customers', 'pendingLoans', 'notifications'));
+        // ── Notifications ─────────────────────────────────────────────────────
+        $notifications = DB::table('notifications')
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // ── Dashboard Stats ───────────────────────────────────────────────────
+        $accountsBase = DB::table('accounts');
+        if ($branchId) {
+            $accountsBase->where('branch_id', $branchId);
+        }
+
+        // $branchUserIds may have been set above when filtering pending loans; default to all if not.
+        $branchUserIds = $branchUserIds ?? $activeAccounts->pluck('user_id')->unique()->toArray();
+
+        $stats = (object) [
+            'total_customers'    => $customers->count(),
+            'total_accounts'     => (clone $accountsBase)->where('status', 'Active')->count(),
+            'pending_accounts'   => $pendingAccounts->count(),
+            'pending_loans'      => $pendingLoans->count(),
+            'branch_balance'     => (clone $accountsBase)->where('status', 'Active')->sum('balance'),
+            'active_loans_total' => DB::table('loans')
+                ->when($branchId, function ($q) use ($branchUserIds) {
+                    $q->whereIn('user_id', $branchUserIds);
+                })
+                ->where('status', 'Active')
+                ->sum('amount'),
+        ];
+
+        // ── Recent Transactions (branch accounts, last 8) ─────────────────────
+        $branchAccountIds = (clone $accountsBase)->pluck('id')->toArray();
+        $recentTransactions = [];
+        if (!empty($branchAccountIds)) {
+            $recentTransactions = DB::table('transactions')
+                ->join('accounts', 'transactions.account_id', '=', 'accounts.id')
+                ->join('USERS', 'accounts.user_id', '=', 'USERS.id')
+                ->select(
+                    'transactions.id',
+                    'transactions.transaction_type',
+                    'transactions.amount',
+                    'transactions.created_at',
+                    'accounts.account_number',
+                    'USERS.first_name',
+                    'USERS.last_name'
+                )
+                ->whereIn('transactions.account_id', $branchAccountIds)
+                ->orderBy('transactions.created_at', 'desc')
+                ->limit(8)
+                ->get();
+        }
+
+        // ── Branch name for greeting ──────────────────────────────────────────
+        $branchName = null;
+        if ($branchId) {
+            $branchName = DB::table('branches')->where('branch_id', $branchId)->value('branch_name');
+        }
+
+        return view('employee.dashboard', compact(
+            'pendingAccounts', 'activeAccounts', 'customers', 'pendingLoans',
+            'notifications', 'stats', 'recentTransactions', 'branchName'
+        ));
     }
 
     public function editCustomer($id)

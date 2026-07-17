@@ -266,6 +266,11 @@ class UserController extends Controller
             $query->whereDate('transactions.created_at', '<=', $request->to_date);
         }
 
+        // Filter by specific account
+        if ($request->filled('account') && in_array((int) $request->account, $accountIds)) {
+            $query->where('transactions.account_id', (int) $request->account);
+        }
+
         $transactions = $query->paginate(15)->withQueryString();
         $totalCredit  = \Illuminate\Support\Facades\DB::table('transactions')
             ->whereIn('account_id', $accountIds)

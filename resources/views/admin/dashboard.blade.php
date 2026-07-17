@@ -80,6 +80,43 @@
         .report-card .icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .report-card .text-box h4 { margin: 0 0 5px 0; color: #2b3674; font-size: 1.1rem; }
         .report-card .text-box p { margin: 0; color: #a3aed1; font-size: 0.85rem; }
+
+        /* ── Pagination (Laravel default Tailwind output) ─────────────────── */
+        nav[role="navigation"] { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+        nav[role="navigation"] > div:first-child { font-size: 0.85rem; color: #a3aed1; }
+        nav[role="navigation"] > div:last-child > span,
+        nav[role="navigation"] > div:last-child > a { display: inline-flex; }
+        .pagination-links { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        /* Tailwind's span wrapper */
+        nav[role="navigation"] span[aria-disabled="true"] span,
+        nav[role="navigation"] span[aria-current="page"] span,
+        nav[role="navigation"] a {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 36px; height: 36px; padding: 0 10px;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+            font-family: 'Inter', sans-serif; text-decoration: none;
+            transition: all 0.18s ease;
+        }
+        /* Normal page links */
+        nav[role="navigation"] a {
+            background: #f4f7fe; color: #2b3674; border: 1px solid #e2e8f0;
+        }
+        nav[role="navigation"] a:hover {
+            background: #4318ff; color: #ffffff; border-color: #4318ff;
+        }
+        /* Active (current) page */
+        nav[role="navigation"] span[aria-current="page"] span {
+            background: #4318ff; color: #ffffff; border: 1px solid #4318ff;
+        }
+        /* Disabled prev/next */
+        nav[role="navigation"] span[aria-disabled="true"] span {
+            background: #f4f7fe; color: #c0cae8; border: 1px solid #e2e8f0;
+            cursor: not-allowed;
+        }
+        /* Dots (...) */
+        nav[role="navigation"] span[aria-disabled="true"]:not([aria-label]) span {
+            background: transparent; border-color: transparent; color: #a3aed1;
+        }
     </style>
 </head>
 <body>
@@ -426,7 +463,7 @@
                                         <tr>
                                             <td>{{ $acc->account_number }}</td>
                                             <td>{{ $acc->user->first_name ?? '' }} {{ $acc->user->last_name ?? '' }} ({{ $acc->user->customer_id ?? 'Unknown' }})</td>
-                                            <td>{{ $acc->branch->branch_name ?? 'Central Branch' }}</td>
+                                            <td>{{ $acc->branch_name }}</td>
                                             <td>{{ $acc->account_type }}</td>
                                             <td>${{ number_format($acc->balance, 2) }}</td>
                                             <td>
@@ -591,40 +628,77 @@
                     @if(isset($logs))
                         <div class="table-container">
                             <div class="table-header">
-                                <h3>Audit Logs (Triggered automatically by database changes)</h3>
+                                <h3><i class="fa-solid fa-clipboard-list" style="color:#4318ff; margin-right:8px;"></i>Audit Logs</h3>
+                                <span style="font-size:0.85rem; color:#a3aed1; background:#f4f7fe; padding:4px 14px; border-radius:20px;">
+                                    {{ $logs->total() }} total records
+                                </span>
                             </div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Log ID</th>
-                                        <th>Table Name</th>
+                                        <th>Table</th>
                                         <th>Action</th>
                                         <th>Performed By</th>
                                         <th>Details</th>
-                                        <th>Date</th>
+                                        <th>Date & Time</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($logs as $log)
+                                        @php
+                                            $action = strtoupper($log->action ?? '');
+                                            $badgeClass = match(true) {
+                                                in_array($action, ['INSERT','DEPOSIT','TRANSFER_IN','APPROVE']) => 'badge-success',
+                                                in_array($action, ['UPDATE','TRANSFER','WITHDRAWAL','TRANSFER_OUT']) => 'badge-warning',
+                                                in_array($action, ['DELETE','REJECT','SUSPEND']) => 'badge-danger',
+                                                default => 'badge-info',
+                                            };
+                                        @endphp
                                         <tr>
-                                            <td>{{ $log->id }}</td>
-                                            <td>{{ $log->table_name }}</td>
-                                            <td><span class="badge @if($log->action === 'INSERT') badge-success @elseif($log->action === 'UPDATE') badge-warning @else badge-danger @endif">{{ $log->action }}</span></td>
-                                            <td>{{ $log->performed_by }}</td>
-                                            <td>{{ $log->details }}</td>
-                                            <td>{{ $log->created_at }}</td>
+                                            <td style="color:#a3aed1; font-size:0.82rem;">#{{ $log->id }}</td>
+                                            <td>
+                                                <span style="background:#f4f7fe; padding:3px 10px; border-radius:6px; font-size:0.8rem; color:#4318ff; font-weight:600;">
+                                                    {{ strtoupper($log->table_name ?? '—') }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ $badgeClass }}">{{ $log->action }}</span>
+                                            </td>
+                                            <td style="font-weight:500;">{{ $log->performed_by ?? '—' }}</td>
+                                            <td style="max-width:260px;">
+                                                <span title="{{ $log->details }}" style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px; font-size:0.88rem;">
+                                                    {{ $log->details ?? '—' }}
+                                                </span>
+                                            </td>
+                                            <td style="white-space:nowrap; font-size:0.88rem; color:#a3aed1;">
+                                                {{ \Carbon\Carbon::parse($log->created_at)->format('d M Y, H:i') }}
+                                            </td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="6">No logs found.</td></tr>
+                                        <tr>
+                                            <td colspan="6" style="text-align:center; color:#a3aed1; padding:40px;">
+                                                <i class="fa-solid fa-clipboard" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>
+                                                No audit logs found.
+                                            </td>
+                                        </tr>
                                     @endforelse
                                 </tbody>
                             </table>
-                            <div style="padding: 15px 24px;">
-                                {{ $logs->appends(request()->query())->links() }}
+
+                            <!-- Pagination footer -->
+                            <div style="padding: 16px 24px; border-top: 1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                <span style="font-size:0.85rem; color:#a3aed1;">
+                                    Showing {{ $logs->firstItem() }}–{{ $logs->lastItem() }} of {{ $logs->total() }} records
+                                </span>
+                                <div>
+                                    {{ $logs->appends(request()->query())->links() }}
+                                </div>
                             </div>
                         </div>
                     @endif
                 </section>
+
 
                 <!-- 09. Settings Section -->
                 <section id="settings-section" class="content-section {{ $currentSection === 'settings' ? 'active' : '' }}">

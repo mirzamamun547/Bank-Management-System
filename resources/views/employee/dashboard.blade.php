@@ -59,78 +59,114 @@
         <section id="dashboard-section" class="content-section active">
             <div class="section-header">
                 <h1>Overview</h1>
-                <p>Welcome back! Here's what's happening today.</p>
+                <p>Welcome back, <strong>{{ auth()->user()->first_name }}</strong>!
+                    @if($branchName) &nbsp;Branch: <strong>{{ $branchName }}</strong> @endif
+                    &nbsp;— Here's what's happening today.
+                </p>
             </div>
-            
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
                     <div class="stat-info">
-                        <h3>Total Customers</h3>
-                        <h2>1,245</h2>
+                        <h3>Branch Customers</h3>
+                        <h2>{{ number_format($stats->total_customers) }}</h2>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon green"><i class="fa-solid fa-vault"></i></div>
                     <div class="stat-info">
-                        <h3>Total Deposits</h3>
-                        <h2>$4.2M</h2>
+                        <h3>Branch Balance</h3>
+                        <h2>${{ number_format($stats->branch_balance, 0) }}</h2>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon orange"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                     <div class="stat-info">
-                        <h3>Active Loans</h3>
-                        <h2>$1.8M</h2>
+                        <h3>Active Loans Total</h3>
+                        <h2>${{ number_format($stats->active_loans_total, 0) }}</h2>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon purple"><i class="fa-solid fa-id-badge"></i></div>
+                    <div class="stat-icon purple"><i class="fa-solid fa-wallet"></i></div>
                     <div class="stat-info">
-                        <h3>Employees</h3>
-                        <h2>42</h2>
+                        <h3>Active Accounts</h3>
+                        <h2>{{ number_format($stats->total_accounts) }}</h2>
                     </div>
                 </div>
             </div>
 
+            <!-- Quick-action alert badges -->
+            @if($stats->pending_accounts > 0 || $stats->pending_loans > 0)
+            <div style="display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
+                @if($stats->pending_accounts > 0)
+                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 18px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="document.querySelector('[data-target=accounts-section]').click()">
+                    <i class="fa-solid fa-clock" style="color:#d97706;"></i>
+                    <span style="font-size:0.9rem; font-weight:600; color:#92400e;">{{ $stats->pending_accounts }} Pending Account{{ $stats->pending_accounts > 1 ? 's' : '' }} awaiting approval</span>
+                </div>
+                @endif
+                @if($stats->pending_loans > 0)
+                <div style="background:#fef3c7; border:1px solid #fde68a; border-radius:10px; padding:12px 18px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="document.querySelector('[data-target=loans-section]').click()">
+                    <i class="fa-solid fa-hand-holding-dollar" style="color:#b45309;"></i>
+                    <span style="font-size:0.9rem; font-weight:600; color:#92400e;">{{ $stats->pending_loans }} Pending Loan{{ $stats->pending_loans > 1 ? 's' : '' }} to review</span>
+                </div>
+                @endif
+            </div>
+            @endif
+
             <div class="recent-activity">
-                <h2>Recent Transactions</h2>
+                <h2>Recent Branch Transactions</h2>
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th>Date</th>
                             <th>Account No</th>
-                            <th>Customer Name</th>
+                            <th>Customer</th>
                             <th>Type</th>
                             <th>Amount</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>ACC-9821</td>
-                            <td>Sarah Jenkins</td>
-                            <td><span class="badge info">Deposit</span></td>
-                            <td class="amount positive">+$1,500.00</td>
-                            <td><span class="badge success">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>ACC-4512</td>
-                            <td>Michael Chen</td>
-                            <td><span class="badge warning">Withdrawal</span></td>
-                            <td class="amount negative">-$400.00</td>
-                            <td><span class="badge success">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>ACC-7734</td>
-                            <td>Emma Stone</td>
-                            <td><span class="badge purple">Loan Payment</span></td>
-                            <td class="amount negative">-$850.00</td>
-                            <td><span class="badge pending">Processing</span></td>
-                        </tr>
+                        @forelse($recentTransactions as $txn)
+                            @php
+                                $type = strtoupper($txn->transaction_type);
+                                $isCredit = in_array($type, ['DEPOSIT','TRANSFER_IN']);
+                                $badgeClass = match($type) {
+                                    'DEPOSIT'      => 'info',
+                                    'WITHDRAWAL'   => 'warning',
+                                    'TRANSFER_OUT' => 'warning',
+                                    'TRANSFER_IN'  => 'info',
+                                    'LOAN_EMI'     => 'purple',
+                                    default        => 'pending',
+                                };
+                                $label = match($type) {
+                                    'DEPOSIT'      => 'Deposit',
+                                    'WITHDRAWAL'   => 'Withdrawal',
+                                    'TRANSFER_OUT' => 'Transfer Out',
+                                    'TRANSFER_IN'  => 'Transfer In',
+                                    'LOAN_EMI'     => 'Loan EMI',
+                                    default        => ucfirst(strtolower($type)),
+                                };
+                            @endphp
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($txn->created_at)->format('d M, H:i') }}</td>
+                                <td>{{ $txn->account_number }}</td>
+                                <td>{{ $txn->first_name }} {{ $txn->last_name }}</td>
+                                <td><span class="badge {{ $badgeClass }}">{{ $label }}</span></td>
+                                <td class="amount {{ $isCredit ? 'positive' : 'negative' }}">
+                                    {{ $isCredit ? '+' : '-' }}${{ number_format($txn->amount, 2) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:#aaa; padding:30px;">No recent transactions for this branch.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </section>
+
 
         <!-- Customers Section -->
         <section id="customers-section" class="content-section">
