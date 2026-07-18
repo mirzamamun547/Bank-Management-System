@@ -354,7 +354,7 @@ return new class extends Migration
 
                 -- Approve the loan
                 UPDATE loans SET
-                    status     = 'Approved',
+                    status     = 'Active',
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = p_loan_id;
 

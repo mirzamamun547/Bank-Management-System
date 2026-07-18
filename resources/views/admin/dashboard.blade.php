@@ -278,7 +278,7 @@
                 <section id="employees-section" class="content-section {{ $currentSection === 'employees' ? 'active' : '' }}">
                     @if(isset($employees))
                         <div class="table-container" style="padding: 24px; margin-bottom: 30px;">
-                            <h3>Add New Employee (Oracle Stored Procedure)</h3>
+                            <h3>Add New EMPLOYEE</h3>
                             <form action="{{ route('admin.employees.store') }}" method="POST" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
                                 @csrf
                                 <input type="text" name="first_name" placeholder="First Name" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -295,13 +295,13 @@
                                         <option value="{{ $b->branch_id }}">{{ $b->branch_name }}</option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn-primary" style="grid-column: span 3; justify-content: center; font-size: 1rem;"><i class="fa-solid fa-plus"></i> Create Employee via PL/SQL</button>
+                                <button type="submit" class="btn-primary" style="grid-column: span 3; justify-content: center; font-size: 1rem;"><i class="fa-solid fa-plus"></i> Create Employee </button>
                             </form>
                         </div>
 
                         <div class="table-container">
                             <div class="table-header">
-                                <h3>Employee Database</h3>
+                                <h3>Employee </h3>
                             </div>
                             <table class="data-table">
                                 <thead>
@@ -348,7 +348,7 @@
                 <section id="branches-section" class="content-section {{ $currentSection === 'branches' ? 'active' : '' }}">
                     @if(isset($branches) && $currentSection === 'branches')
                         <div class="table-container" style="padding: 24px; margin-bottom: 30px;">
-                            <h3>Add New Branch (Oracle PL/SQL procedure)</h3>
+                            <h3>Add New Branch </h3>
                             <form action="{{ route('admin.branches.store') }}" method="POST" style="display:flex; gap: 15px; margin-top: 15px;">
                                 @csrf
                                 <input type="text" name="branch_name" placeholder="Branch Name" required style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; flex: 1;">
@@ -546,7 +546,7 @@
                 <section id="reports-section" class="content-section {{ $currentSection === 'reports' ? 'active' : '' }}">
                     @if(isset($customerReport))
                         <div class="table-container" style="margin-bottom: 30px;">
-                            <div class="table-header"><h3>Customer Database Report (Read-Only)</h3></div>
+                            <div class="table-header"><h3>Customer Report</h3></div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -572,7 +572,7 @@
                         </div>
 
                         <div class="table-container" style="margin-bottom: 30px;">
-                            <div class="table-header"><h3>Employee Roster Report (Read-Only)</h3></div>
+                            <div class="table-header"><h3>Employee Report</h3></div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -598,7 +598,7 @@
                         </div>
 
                         <div class="table-container" style="margin-bottom: 30px;">
-                            <div class="table-header"><h3>Branch Summary Report (Oracle View)</h3></div>
+                            <div class="table-header"><h3>Branch Summary Report </h3></div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
