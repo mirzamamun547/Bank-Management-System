@@ -72,6 +72,17 @@
 
         <!-- Dashboard Content -->
         <main class="dashboard-content">
+            @if(session('ticket_success'))
+                <div style="grid-column: span 2; background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 20px;">
+                    <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i>{{ session('ticket_success') }}
+                </div>
+            @endif
+            @if(session('ticket_error'))
+                <div style="grid-column: span 2; background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; margin-bottom: 20px;">
+                    <i class="fa-solid fa-circle-xmark" style="margin-right: 8px;"></i>{{ session('ticket_error') }}
+                </div>
+            @endif
+
             <!-- Left Column -->
             <div class="left-col">
                 <!-- Summary Cards -->
@@ -237,6 +248,43 @@
                         <div style="padding: 1rem; text-align: center; color: var(--text-muted);">No new notifications</div>
                         @endforelse
                     </div>
+                </div>
+
+                <!-- Support & Feedback Panel -->
+                <div class="section-panel" style="margin-top: 20px;">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-circle-question" style="color: #4318ff; margin-right: 8px;"></i>Support & Feedback</h3>
+                    </div>
+                    <form action="{{ route('user.support.submit') }}" method="POST" style="display: flex; flex-direction: column; gap: 12px; padding: 15px 0 0 0;">
+                        @csrf
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 500; color: #6b7a99; display: block; margin-bottom: 6px;">Request Type</label>
+                            <select name="ticket_type" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none; background: #fff; color: #2b3674;">
+                                <option value="COMPLAINT">Complaint</option>
+                                <option value="FEEDBACK">Feedback / Advantage</option>
+                                <option value="REQUEST">Need of Extra Report / Service</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 500; color: #6b7a99; display: block; margin-bottom: 6px;">Priority</label>
+                            <select name="priority" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none; background: #fff; color: #2b3674;">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 500; color: #6b7a99; display: block; margin-bottom: 6px;">Subject</label>
+                            <input type="text" name="subject" required placeholder="Brief title of the issue" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box; color: #2b3674;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 500; color: #6b7a99; display: block; margin-bottom: 6px;">Details / Message</label>
+                            <textarea name="message" required rows="4" placeholder="Explain your feedback or issue in detail..." style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none; resize: vertical; box-sizing: border-box; color: #2b3674;"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top: 10px; font-size: 0.95rem; justify-content: center; width: 100%; padding: 12px; border-radius: 8px;">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Support Request
+                        </button>
+                    </form>
                 </div>
             </div>
         </main>

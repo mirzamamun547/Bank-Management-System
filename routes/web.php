@@ -87,3 +87,8 @@ Route::put('/employee/customer/update/{id}', [EmployeeController::class, 'update
 
 Route::delete('/employee/customer/delete/{id}', [EmployeeController::class, 'deleteCustomer'])
     ->name('employee.customer.delete');
+
+// Customer Support & Feedback routes
+Route::post('/user-support/submit', [UserController::class, 'submitTicket'])->middleware('auth')->name('user.support.submit');
+Route::post('/employee/support/submit', [EmployeeController::class, 'submitTicket'])->middleware('auth')->name('employee.support.submit');
+Route::post('/admin/support/{id}/respond', [ReportController::class, 'respondTicket'])->middleware('auth')->name('admin.support.respond');

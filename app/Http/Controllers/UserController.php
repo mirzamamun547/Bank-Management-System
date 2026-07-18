@@ -382,4 +382,35 @@ class UserController extends Controller
             return back()->with('error', 'EMI payment failed: ' . $errorMsg);
         }
     }
+
+    public function submitTicket(Request $request)
+    {
+        $request->validate([
+            'ticket_type' => 'required|string|in:COMPLAINT,FEEDBACK,REQUEST',
+            'subject' => 'required|string|max:200',
+            'message' => 'required|string',
+            'priority' => 'required|string|in:Low,Medium,High',
+        ]);
+
+        try {
+            $pdo = \Illuminate\Support\Facades\DB::getPdo();
+            $stmt = $pdo->prepare("BEGIN SUBMIT_SUPPORT_TICKET(:user_id, :ticket_type, :subject, :message, :priority); END;");
+            $userId = auth()->id();
+            $stmt->bindValue(':user_id', $userId, \PDO::PARAM_INT);
+            $stmt->bindValue(':ticket_type', $request->ticket_type, \PDO::PARAM_STR);
+            $stmt->bindValue(':subject', $request->subject, \PDO::PARAM_STR);
+            $stmt->bindValue(':message', $request->message, \PDO::PARAM_STR);
+            $stmt->bindValue(':priority', $request->priority, \PDO::PARAM_STR);
+            $stmt->execute();
+
+            return back()->with('ticket_success', 'Your support ticket has been submitted successfully.');
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            if (preg_match('/ORA-\d+: (.*)/', $errorMsg, $matches)) {
+                $errorMsg = $matches[1];
+            }
+            return back()->with('ticket_error', 'Failed to submit ticket: ' . $errorMsg);
+        }
+    }
 }
+

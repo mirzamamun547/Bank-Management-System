@@ -25,7 +25,8 @@
             <li data-target="withdraw-section"><i class="fa-solid fa-hand-holding-dollar"></i> Withdraw Money</li>
             <li data-target="transfer-section"><i class="fa-solid fa-right-left"></i> Money Transfer</li>
             <li data-target="profile-section"><i class="fa-solid fa-user"></i> My Profile</li>
-                <li data-target="notifications-section"><i class="fa-regular fa-bell"></i> Notifications</li>
+            <li data-target="notifications-section"><i class="fa-regular fa-bell"></i> Notifications</li>
+            <li data-target="support-section"><i class="fa-solid fa-circle-question"></i> Support & Feedback</li>
         </ul>
         <div class="user-profile">
             <img src="https://i.pravatar.cc/150?img=11" alt="Admin Profile">
@@ -828,6 +829,62 @@
             </div>
         </section>
 
+        <!-- Support & Feedback Section -->
+        <section id="support-section" class="content-section">
+            <div class="section-header">
+                <h1>Support & Feedback</h1>
+                <p>Submit suggestions, complaints, or need of extra reports to the admin panel.</p>
+            </div>
+
+            @if(session('ticket_success'))
+                <div style="background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 20px;">
+                    <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i>{{ session('ticket_success') }}
+                </div>
+            @endif
+            @if(session('ticket_error'))
+                <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; margin-bottom: 20px;">
+                    <i class="fa-solid fa-circle-xmark" style="margin-right: 8px;"></i>{{ session('ticket_error') }}
+                </div>
+            @endif
+
+            <div class="table-container" style="padding: 30px; max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                <form action="{{ route('employee.support.submit') }}" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+                    @csrf
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-weight: 600; color: #2b3674; font-size: 0.95rem;">Request Type</label>
+                        <select name="ticket_type" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; background: #fff; color: #2b3674;">
+                            <option value="COMPLAINT">Complaint / Grievance</option>
+                            <option value="FEEDBACK">Feedback / Advantage</option>
+                            <option value="REQUEST">Request for Extra Report / Feature</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-weight: 600; color: #2b3674; font-size: 0.95rem;">Priority</label>
+                        <select name="priority" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; background: #fff; color: #2b3674;">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-weight: 600; color: #2b3674; font-size: 0.95rem;">Subject</label>
+                        <input type="text" name="subject" required placeholder="Subject or Title" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; box-sizing: border-box; color: #2b3674;">
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-weight: 600; color: #2b3674; font-size: 0.95rem;">Details / Message</label>
+                        <textarea name="message" required rows="6" placeholder="Describe the report, complaint, or feature requirement in detail..." style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; resize: vertical; box-sizing: border-box; color: #2b3674;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn primary-btn" style="padding: 12px 24px; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; background: #4318ff; color: #fff; border: none; border-radius: 8px;">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Report
+                    </button>
+                </form>
+            </div>
+        </section>
+
         @if(session('profile_success') || session('password_success') || $errors->has('password_error') || $errors->has('new_password'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -835,6 +892,17 @@
                 document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
                 document.querySelector('[data-target="profile-section"]').classList.add('active');
                 document.getElementById('profile-section').classList.add('active');
+            });
+        </script>
+        @endif
+
+        @if(session('ticket_success') || session('ticket_error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                document.querySelector('[data-target="support-section"]').classList.add('active');
+                document.getElementById('support-section').classList.add('active');
             });
         </script>
         @endif

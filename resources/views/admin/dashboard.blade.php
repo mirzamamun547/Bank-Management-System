@@ -546,58 +546,6 @@
                 <section id="reports-section" class="content-section {{ $currentSection === 'reports' ? 'active' : '' }}">
                     @if(isset($customerReport))
                         <div class="table-container" style="margin-bottom: 30px;">
-                            <div class="table-header"><h3>Customer Report</h3></div>
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Customer ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($customerReport as $cust)
-                                        <tr>
-                                            <td>{{ $cust->customer_id }}</td>
-                                            <td>{{ $cust->full_name }}</td>
-                                            <td>{{ $cust->email }}</td>
-                                            <td>{{ $cust->phone }}</td>
-                                            <td>{{ $cust->status }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="table-container" style="margin-bottom: 30px;">
-                            <div class="table-header"><h3>Employee Report</h3></div>
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Employee ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Branch</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($employeeReport as $emp)
-                                        <tr>
-                                            <td>{{ $emp->customer_id }}</td>
-                                            <td>{{ $emp->first_name }} {{ $emp->last_name }}</td>
-                                            <td>{{ $emp->email }}</td>
-                                            <td>{{ $emp->branch_name ?? 'Central Branch' }}</td>
-                                            <td>{{ $emp->status }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="table-container" style="margin-bottom: 30px;">
                             <div class="table-header"><h3>Branch Summary Report </h3></div>
                             <table class="data-table">
                                 <thead>
@@ -617,6 +565,89 @@
                                             <td>${{ number_format($br->total_balance, 2) }}</td>
                                         </tr>
                                     @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 6. Customer Support & Feedback Reports -->
+                        <div class="table-container" style="margin-bottom: 30px; overflow-x: auto;">
+                            <div class="table-header">
+                                <h3>Customer Support & Feedback Reports</h3>
+                                <span style="font-size:0.85rem; color:#a3aed1; background:#f4f7fe; padding:4px 14px; border-radius:20px;">
+                                    {{ isset($userReports) ? count($userReports) : 0 }} total tickets
+                                </span>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket ID</th>
+                                        <th>Sender</th>
+                                        <th>Type</th>
+                                        <th>Subject</th>
+                                        <th>Message</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(isset($userReports) && count($userReports) > 0)
+                                        @foreach($userReports as $ticket)
+                                            @php
+                                                $badgeClass = match($ticket->status) {
+                                                    'Open' => 'badge-info',
+                                                    'In Review' => 'badge-warning',
+                                                    'Resolved' => 'badge-success',
+                                                    'Closed' => 'badge-danger',
+                                                    default => 'badge-info',
+                                                };
+                                                $typeBadge = match($ticket->ticket_type) {
+                                                    'COMPLAINT' => 'background:#fee2e2; color:#ef4444; border: 1px solid #fecaca; font-weight:600;',
+                                                    'FEEDBACK' => 'background:#dcfce7; color:#166534; border: 1px solid #bbf7d0; font-weight:600;',
+                                                    'REQUEST' => 'background:#e0f2fe; color:#075985; border: 1px solid #bae6fd; font-weight:600;',
+                                                    default => 'background:#f4f7fe; color:#2b3674; font-weight:600;',
+                                                };
+                                            @endphp
+                                            <tr>
+                                                <td style="color:#a3aed1; font-size:0.82rem;">#{{ $ticket->id }}</td>
+                                                <td>
+                                                    <span style="font-weight:600; color:#2b3674;">{{ $ticket->first_name }} {{ $ticket->last_name }}</span>
+                                                    <span style="background:#f4f7fe; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; color:#4318ff; display:inline-block; margin-left:4px;">
+                                                        {{ strtoupper($ticket->role) }}
+                                                    </span>
+                                                    <br><small style="color:#a3aed1;">{{ $ticket->customer_id }}</small>
+                                                </td>
+                                                <td>
+                                                    <span style="padding:4px 10px; border-radius:6px; font-size:0.8rem; {{ $typeBadge }}">
+                                                        {{ $ticket->ticket_type }}
+                                                    </span>
+                                                </td>
+                                                <td><strong>{{ $ticket->subject }}</strong></td>
+                                                <td style="max-width:180px; white-space: normal; word-break: break-word; font-size:0.88rem;">{{ $ticket->message }}</td>
+                                                <td>
+                                                    <span style="font-weight:600; color: {{ $ticket->priority === 'High' ? '#ef4444' : ($ticket->priority === 'Medium' ? '#d97706' : '#059669') }}">
+                                                        {{ $ticket->priority }}
+                                                    </span>
+                                                </td>
+                                                <td><span class="badge {{ $badgeClass }}">{{ $ticket->status }}</span></td>
+                                                <td style="white-space:nowrap; font-size:0.82rem; color:#a3aed1;">{{ \Carbon\Carbon::parse($ticket->created_at)->format('d M Y, H:i') }}</td>
+                                                <td>
+                                                    <button class="btn-primary respond-btn" 
+                                                            data-id="{{ $ticket->id }}" 
+                                                            data-status="{{ $ticket->status }}" 
+                                                            data-response="{{ $ticket->admin_response ?? '' }}"
+                                                            style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">
+                                                        <i class="fa-solid fa-reply"></i> Action
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @else
+                                        <tr>
+                                            <td colspan="9" style="text-align:center; padding:30px; color:#a3aed1;">No support tickets submitted yet.</td>
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
@@ -833,6 +864,55 @@
                 }
             });
         @endif
+
+        function openRespondModal(id, status, responseText) {
+            const form = document.getElementById('respondForm');
+            form.action = `/admin/support/${id}/respond`;
+            document.getElementById('ticketStatus').value = status;
+            document.getElementById('ticketResponse').value = responseText;
+            document.getElementById('respondModal').style.display = 'flex';
+        }
+        function closeRespondModal() {
+            document.getElementById('respondModal').style.display = 'none';
+        }
+
+        // DOMContentLoaded event listener to attach listeners safely
+        document.addEventListener('DOMContentLoaded', function() {
+            const respondButtons = document.querySelectorAll('.respond-btn');
+            respondButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const status = this.getAttribute('data-status');
+                    const responseText = this.getAttribute('data-response');
+                    openRespondModal(id, status, responseText);
+                });
+            });
+        });
     </script>
+
+    <!-- Ticket Action Modal -->
+    <div id="respondModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:#fff; width:90%; max-width:500px; padding:30px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.1); position:relative;">
+            <h3 style="color:#2b3674; margin-top:0; margin-bottom:20px;">Manage Support Ticket</h3>
+            <button onclick="closeRespondModal()" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.2rem; cursor:pointer; color:#a3aed1;"><i class="fa-solid fa-xmark"></i></button>
+            <form id="respondForm" method="POST" style="display:flex; flex-direction:column; gap:16px;">
+                @csrf
+                <div>
+                    <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Status</label>
+                    <select name="status" id="ticketStatus" required style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:inherit; color:#2b3674;">
+                        <option value="Open">Open</option>
+                        <option value="In Review">In Review</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; color:#6b7a99; font-size:0.9rem; margin-bottom:8px;">Admin Response / Solution</label>
+                    <textarea name="admin_response" id="ticketResponse" rows="5" placeholder="Write response or updates here..." style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-family:inherit; resize:vertical; color:#2b3674;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top:10px; justify-content:center; font-size:1rem;"><i class="fa-solid fa-paper-plane"></i> Save Changes</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
