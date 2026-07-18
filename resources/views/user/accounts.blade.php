@@ -75,6 +75,16 @@
                 </div>
             @endif
 
+            @if($errors->any())
+                <div style="background-color: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; border: 1px solid #fecaca; margin-bottom: 24px;">
+                    <ul style="margin: 0; padding-left: 20px; font-weight: 500;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
                 <div>
                     <h1 style="color: var(--text-main);">My Accounts</h1>
@@ -150,23 +160,26 @@
              
                 <div style="width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; align-items: center; padding-top: 20px;">
                   
-                    <div style="width: 150px; height: 150px; background: #e9ecef; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; position: relative; overflow: hidden;">
-                        <i class="fa-solid fa-user" style="font-size: 5rem; color: #ced4da;"></i>
-                        <input type="file" name="profile_photo" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                    <!-- Profile Photo Preview & Input -->
+                    <div id="profilePreviewContainer" style="width: 150px; height: 150px; background: #e9ecef; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; position: relative; overflow: hidden;">
+                        <i id="profileIcon" class="fa-solid fa-user" style="font-size: 5rem; color: #ced4da;"></i>
+                        <img id="profileImgPreview" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                        <input type="file" id="profilePhotoInput" name="profile_photo" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
                     </div>
-                    <button type="button" style="background: none; border: none; color: #0056b3; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-upload" style="font-size: 1.5rem;"></i> Upload
+                    <button type="button" onclick="document.getElementById('profilePhotoInput').click()" style="background: none; border: none; color: #0056b3; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-upload" style="font-size: 1.5rem;"></i> Upload Photo
                     </button>
 
                     <hr style="width: 100%; border: 0; border-top: 1px solid #dee2e6; margin: 10px 0;">
 
-                  
-                    <div style="width: 150px; height: 80px; background: #e9ecef; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; position: relative; overflow: hidden;">
-                        <i class="fa-solid fa-signature" style="font-size: 2.5rem; color: #ced4da;"></i>
-                        <input type="file" name="signature" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                    <!-- Signature Preview & Input -->
+                    <div id="signaturePreviewContainer" style="width: 150px; height: 80px; background: #e9ecef; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; position: relative; overflow: hidden;">
+                        <i id="signatureIcon" class="fa-solid fa-signature" style="font-size: 2.5rem; color: #ced4da;"></i>
+                        <img id="signatureImgPreview" style="display: none; width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;">
+                        <input type="file" id="signatureInput" name="signature" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
                     </div>
-                    <button type="button" style="background: none; border: none; color: #0056b3; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-upload" style="font-size: 1.5rem;"></i> Upload
+                    <button type="button" onclick="document.getElementById('signatureInput').click()" style="background: none; border: none; color: #0056b3; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-upload" style="font-size: 1.5rem;"></i> Upload Sign
                     </button>
                 </div>
 
@@ -289,6 +302,41 @@
                 label.style.display = 'none';
             }
         }
+
+        // Live Preview JS logic
+        document.getElementById('profilePhotoInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImgPreview').src = e.target.result;
+                    document.getElementById('profileImgPreview').style.display = 'block';
+                    document.getElementById('profileIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('signatureInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('signatureImgPreview').src = e.target.result;
+                    document.getElementById('signatureImgPreview').style.display = 'block';
+                    document.getElementById('signatureIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     </script>
+
+    @if($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('createAccountModal').style.display = 'flex';
+        });
+    </script>
+    @endif
 </body>
 </html>
