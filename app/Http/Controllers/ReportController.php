@@ -12,39 +12,10 @@ class ReportController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Customer Report
-        $customerReport = DB::table('USERS')
-            ->where('ROLE', 'CUSTOMER')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // 2. Employee Report
-        $employeeReport = DB::table('USERS')
-            ->leftJoin('branches', 'USERS.branch_id', '=', 'branches.branch_id')
-            ->where('USERS.ROLE', 'EMPLOYEE')
-            ->select('USERS.*', 'branches.branch_name')
-            ->orderBy('USERS.created_at', 'desc')
-            ->get();
-
-        // 3. Branch Report (using BRANCH_SUMMARY_VIEW)
+        // 1. Branch Report (using BRANCH_SUMMARY_VIEW)
         $branchReport = DB::table('BRANCH_SUMMARY_VIEW')->get();
 
-        // 4. Account Report
-        $accountReport = DB::table('accounts')
-            ->join('USERS', 'accounts.user_id', '=', 'USERS.id')
-            ->leftJoin('branches', 'accounts.branch_id', '=', 'branches.branch_id')
-            ->select('accounts.*', 'USERS.first_name', 'USERS.last_name', 'USERS.customer_id', 'branches.branch_name')
-            ->orderBy('accounts.created_at', 'desc')
-            ->get();
-
-        // 5. Loan Report
-        $loanReport = DB::table('loans')
-            ->join('USERS', 'loans.user_id', '=', 'USERS.id')
-            ->select('loans.*', 'USERS.first_name', 'USERS.last_name', 'USERS.customer_id')
-            ->orderBy('loans.created_at', 'desc')
-            ->get();
-
-        // 6. Support Tickets
+        // 2. Support Tickets
         $userReports = DB::table('support_tickets')
             ->join('USERS', 'support_tickets.user_id', '=', 'USERS.id')
             ->select('support_tickets.*', 'USERS.first_name', 'USERS.last_name', 'USERS.role', 'USERS.customer_id')
@@ -52,11 +23,7 @@ class ReportController extends Controller
             ->get();
 
         return view('admin.dashboard', compact(
-            'customerReport',
-            'employeeReport',
             'branchReport',
-            'accountReport',
-            'loanReport',
             'userReports'
         ))->with('section', 'reports');
     }

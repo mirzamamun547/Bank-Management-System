@@ -201,7 +201,7 @@
                         
                         <div class="charts-row-1">
                             <div class="chart-card">
-                                <h3>Monthly Transactions Summary (Oracle View)</h3>
+                                <h3>Monthly Transactions Summary</h3>
                                 <div class="chart-container">
                                     <canvas id="monthlyTransChart"></canvas>
                                 </div>
@@ -544,7 +544,7 @@
 
                 <!-- 07. Reports Section -->
                 <section id="reports-section" class="content-section {{ $currentSection === 'reports' ? 'active' : '' }}">
-                    @if(isset($customerReport))
+                    @if(isset($branchReport))
                         <div class="table-container" style="margin-bottom: 30px;">
                             <div class="table-header"><h3>Branch Summary Report </h3></div>
                             <table class="data-table">

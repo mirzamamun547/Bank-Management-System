@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Compile APPLY_LOAN procedure
+       
         DB::unprepared("
             CREATE OR REPLACE PROCEDURE APPLY_LOAN (
                 p_user_id IN NUMBER,
@@ -76,7 +76,7 @@ return new class extends Migration
             END;
         ");
 
-        // Compile PAY_LOAN_EMI procedure
+        
         DB::unprepared("
             CREATE OR REPLACE PROCEDURE PAY_LOAN_EMI (
                 p_loan_id IN NUMBER,

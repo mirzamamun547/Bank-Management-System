@@ -302,7 +302,7 @@ class EmployeeController extends Controller
                 ->where('id', $account->account_id)
                 ->value('branch_id');
         }
-        // Branch restriction: only allow if employee's branch matches account's branch
+     
         $employee = auth()->user();
         if ($checkBranch && $employee && $employee->branch_id && $account && isset($account->branch_id)) {
             if ($account->branch_id != $employee->branch_id) {
@@ -618,7 +618,7 @@ public function withdrawVerifyOtp(Request $request)
             ]);
     }
 
-    // Oracle DO_TRANSFER Procedure Call
+   
     public function transferVerifyOtp(Request $request)
     {
         $request->validate(['otp_id' => 'required|integer', 'otp' => 'required|string|size:6']);
@@ -638,7 +638,7 @@ public function withdrawVerifyOtp(Request $request)
         }
 
         try {
-            // Oracle DO_TRANSFER Procedure Call
+            
             $performedBy = auth()->user()->full_name ?? 'Employee';
             $pdo         = DB::getPdo();
             $stmt        = $pdo->prepare("BEGIN DO_TRANSFER(:from_account, :to_account, :amount, :performed_by); END;");
@@ -648,7 +648,7 @@ public function withdrawVerifyOtp(Request $request)
             $stmt->bindParam(':performed_by',  $performedBy);
             $stmt->execute();
 
-            // OTP delete করো
+            
             DB::table('otp_verification')->where('id', $record->id)->delete();
 
         } catch (\Exception $e) {

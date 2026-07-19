@@ -71,7 +71,7 @@
             @endif
 
             <div style="background-color: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-md); max-width: 650px; padding: 32px;">
-                <form action="{{ route('customer.update', $customer->id ?? $customer->ID) }}" method="POST">
+                <form action="{{ route('employee.customer.update', $customer->id ?? $customer->ID) }}" method="POST">
                     @csrf
                     @method('PUT')
 

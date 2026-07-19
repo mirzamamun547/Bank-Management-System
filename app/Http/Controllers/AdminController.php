@@ -97,7 +97,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            // Call Oracle PL/SQL package procedure to add employee
+            
             DB::statement("
                 BEGIN
                     ADD_EMPLOYEE(

@@ -124,7 +124,7 @@ class UserController extends Controller
         ];
         $mappedType = $accountTypeMap[$request->account_type] ?? 'Savings Account';
 
-        // Generate a random unique account number
+    
         $account_number = 'ACC-' . random_int(10000, 99999);
         while (\App\Models\Account::where('account_number', $account_number)->exists()) {
             $account_number = 'ACC-' . random_int(10000, 99999);
@@ -153,7 +153,7 @@ class UserController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Mark as read optionally
+    
         \Illuminate\Support\Facades\DB::table('notifications')
             ->where('user_id', $user->id)
             ->where('is_read', 0)
@@ -308,6 +308,22 @@ class UserController extends Controller
 
         try {
             $pdo = \Illuminate\Support\Facades\DB::getPdo();
+
+            // ── CHECK_LOAN_ELIGIBILITY ─────────────────────────────────────────
+            // Note: bindParam needs a reference, so extract id to a local variable
+            $userId      = (int) $user->id;
+            $eligibility = null;
+            $checkStmt = $pdo->prepare("BEGIN :result := CHECK_LOAN_ELIGIBILITY(:user_id); END;");
+            $checkStmt->bindParam(':user_id', $userId, \PDO::PARAM_INT);
+            $checkStmt->bindParam(':result',  $eligibility, \PDO::PARAM_STR, 255);
+            $checkStmt->execute();
+
+            if (str_starts_with((string) $eligibility, 'NOT_ELIGIBLE')) {
+                $reason = str_replace('NOT_ELIGIBLE: ', '', $eligibility);
+                return back()->with('error', 'You are not eligible to apply for a loan: ' . $reason);
+            }
+            // ─────────────────────────────────────────────────────────────────
+
             $stmt = $pdo->prepare("BEGIN APPLY_LOAN(:user_id, :loan_type, :amount, :duration_months, :purpose); END;");
             $stmt->execute([
                 'user_id' => $user->id,

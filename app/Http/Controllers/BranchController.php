@@ -28,9 +28,7 @@ class BranchController extends Controller
         return view('admin.dashboard', compact('branches', 'employees'))->with('section', 'branches');
     }
 
-    /**
-     * Store a new branch using the Oracle PL/SQL package procedure.
-     */
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -60,9 +58,7 @@ class BranchController extends Controller
         }
     }
 
-    /**
-     * Update an existing branch using the Oracle PL/SQL package procedure.
-     */
+   
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -97,9 +93,7 @@ class BranchController extends Controller
         }
     }
 
-    /**
-     * Delete a branch using the Oracle PL/SQL package procedure.
-     */
+   
     public function destroy($id)
     {
         try {
